@@ -102,8 +102,8 @@ Guacamole credentials come from `/api/config` (which reads `.env` vars via n8n),
 ### Guacamole and guacd are amd64-only
 Both run via Docker's Rosetta 2 on Apple Silicon. They're tagged `platform: linux/amd64` in docker-compose.yml. They work fine but take longer to start (~30s).
 
-### n8n workflows must be manually imported
-The JSON files in `n8n/workflows/` must be imported via the n8n UI on first install (Settings → Import). The `n8n-data` volume preserves state across restarts, so this is only needed after `make clean`.
+### n8n workflows are auto-imported during install
+The `_import-workflows` Makefile target imports and activates workflows via the n8n REST API during `make install`. The `n8n-data` volume preserves state across restarts, so re-import is only needed after `make clean`.
 
 ### Guacamole connection records accumulate
 Every `connectRDP()` call creates a new connection in the PostgreSQL database. They accumulate over time. Clean manually:

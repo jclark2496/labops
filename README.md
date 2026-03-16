@@ -206,7 +206,7 @@ LabOps uses n8n webhook endpoints as its API backend. Two workflow files are pro
 | VM Management | `n8n/workflows/vm_management.json` | `/api/vms`, `/api/vms/:id/start`, `/api/vms/:id/stop`, `/api/vms/:id/destroy` |
 | Container Health | `n8n/workflows/container_health.json` | `/api/containers`, `/api/health`, `/api/config` |
 
-**Import workflows** after first install:
+Workflows are **automatically imported and activated** during `make install`. If you need to re-import manually:
 1. Open n8n at `http://localhost:5678`
 2. Go to Settings → Import from File
 3. Import both JSON files from `n8n/workflows/`
@@ -233,9 +233,10 @@ Guacamole and guacd are amd64 images running via Rosetta on Apple Silicon. They 
 - Check that `PROXMOX_*` variables are set in `.env`
 
 ### VM provisioning fails
-- Verify `terraform.tfvars` exists in `proxmox/terraform/`
+- Verify `terraform.tfvars` exists in `proxmox/terraform/` (auto-generated from `.env` on `make install`)
 - Ensure the template VM IDs in `terraform.tfvars` match your Proxmox setup
-- Check SSH access to your Proxmox host: `ssh root@<proxmox-ip>`
+
+**Optional: SSH key for Proxmox** — Some provisioning commands can use SSH for faster VM interaction. Set up key-based auth: `ssh-copy-id root@<your-proxmox-ip>`. Not required — the REST API is used by default.
 
 ## Optional: Add Attack Simulation
 

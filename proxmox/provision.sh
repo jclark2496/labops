@@ -60,8 +60,16 @@ get_vm_ip() {
   local waited=0
   log "Waiting for VM $vmid to get an IP address..."
   while [ $waited -lt $max_wait ]; do
-    local ip=$(ssh -q root@$proxmox_ip "qm guest exec $vmid -- ipconfig 2>/dev/null" 2>/dev/null | \
-      grep -oP '192\.168\.\d+\.\d+' | head -1)
+    # Try Proxmox API first (no SSH needed)
+    local api_result=$(curl -sk -H "Authorization: PVEAPIToken=${PROXMOX_TOKEN_ID}=${PROXMOX_TOKEN_SECRET}" \
+      "${PROXMOX_URL}/api2/json/nodes/${PROXMOX_NODE}/qemu/${vmid}/agent/network-get-interfaces" 2>/dev/null)
+    if [ $? -eq 0 ] && echo "$api_result" | grep -q '"ip-address"'; then
+      local ip=$(echo "$api_result" | python3 -c "import sys,json; data=json.load(sys.stdin); [print(a['ip-address']) for r in data.get('data',{}).get('result',[]) for a in r.get('ip-addresses',[]) if a.get('ip-address-type')=='ipv4' and not a['ip-address'].startswith('127.')]" 2>/dev/null | head -1)
+      if [ -n "$ip" ]; then echo "$ip"; return 0; fi
+    fi
+    # Fall back to SSH
+    local ip=$(ssh -q -o ConnectTimeout=5 root@$proxmox_ip "qm guest exec $vmid -- ipconfig 2>/dev/null" 2>/dev/null | \
+      grep -oE '192\.168\.[0-9]+\.[0-9]+|10\.[0-9]+\.[0-9]+\.[0-9]+' | head -1)
     if [ -n "$ip" ] && [ "$ip" != "$proxmox_ip" ]; then
       echo "$ip"
       return 0
@@ -129,7 +137,24 @@ cmd_status() {
   local proxmox_ip=$(get_proxmox_ip)
   log "Lab VM status on Proxmox ($proxmox_ip):"
   echo ""
-  ssh root@$proxmox_ip "qm list" | awk 'NR==1 || ($1 >= 200)'
+  # Use Proxmox REST API (no SSH needed)
+  local vms=$(curl -sk -H "Authorization: PVEAPIToken=${PROXMOX_TOKEN_ID}=${PROXMOX_TOKEN_SECRET}" \
+    "${PROXMOX_URL}/api2/json/nodes/${PROXMOX_NODE}/qemu" 2>/dev/null)
+  if [ $? -eq 0 ] && echo "$vms" | grep -q '"data"'; then
+    printf "%-10s %-25s %-10s %-10s\n" "VMID" "NAME" "STATUS" "MEM(MB)"
+    echo "$vms" | python3 -c "
+import sys, json
+data = json.load(sys.stdin).get('data', [])
+for vm in sorted(data, key=lambda v: v.get('vmid', 0)):
+    vmid = vm.get('vmid', 0)
+    if vmid >= 200:
+        print(f\"{vmid:<10} {vm.get('name',''):<25} {vm.get('status',''):<10} {vm.get('maxmem',0)//1048576:<10}\")
+" 2>/dev/null
+  else
+    # Fall back to SSH
+    ssh -o ConnectTimeout=5 root@$proxmox_ip "qm list" 2>/dev/null | awk 'NR==1 || ($1 >= 200)' || \
+      warn "Could not reach Proxmox. Check your credentials."
+  fi
   echo ""
 }
 
