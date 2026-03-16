@@ -3,7 +3,7 @@
 # Docker Compose-based training environment for 200+ SEs
 #
 # Usage:
-#   make install     → full first-time setup (run this once)
+#   make install     → full first-time setup (run this once — installs everything)
 #   make up          → start the stack
 #   make down        → stop the stack
 #   make restart     → restart all containers
@@ -26,7 +26,7 @@ help:
 	@echo ""
 	@echo "  LabOps — Make targets"
 	@echo ""
-	@echo "  make install      Full first-time setup"
+	@echo "  make install      Full first-time setup (installs all dependencies)"
 	@echo "  make up           Start all containers"
 	@echo "  make down         Stop all containers"
 	@echo "  make restart      Restart all containers"
@@ -41,7 +41,7 @@ help:
 # ── Install (first-time) ────────────────────────────────────────────────────
 
 .PHONY: install
-install: _check-docker _env _up _wait-healthy
+install: _install-deps _check-docker _env _up _wait-healthy
 	@echo ""
 	@echo "  _          _      ___"
 	@echo " | |    __ _| |__  / _ \ _ __  ___"
@@ -54,31 +54,34 @@ install: _check-docker _env _up _wait-healthy
 	@echo "  LabOps — Ready"
 	@echo "=========================================="
 	@echo ""
+	@echo "  Dashboard:      http://localhost:8080"
 	@echo "  n8n:            http://localhost:5678"
 	@echo "  Guacamole:      http://localhost:8085/guacamole"
 	@echo "  Portainer:      http://localhost:9000"
-	@echo "  Front-End:      http://localhost:8080"
 	@echo ""
-	@echo "  Run 'make status' to verify all services."
+	@echo "  Next steps:"
+	@echo "    1. Open http://localhost:8080 in your browser"
+	@echo "    2. Edit .env with your Proxmox credentials"
+	@echo "    3. Run 'make provision' to spin up lab VMs"
 	@echo ""
 
 # ── Core stack operations ─────────────────────────────────────────────────────
 
 .PHONY: up
 up:
-	@echo ">> Starting LabOps stack..."
+	@echo "▶ Starting LabOps stack..."
 	$(COMPOSE) up -d
-	@echo "Stack started -- run 'make status' to check health"
+	@echo "✅ Stack started — run 'make status' to check health"
 
 .PHONY: down
 down:
-	@echo ">> Stopping LabOps stack..."
+	@echo "■ Stopping LabOps stack..."
 	$(COMPOSE) down
-	@echo "Stack stopped"
+	@echo "✅ Stack stopped"
 
 .PHONY: restart
 restart:
-	@echo ">> Restarting LabOps stack..."
+	@echo "▶ Restarting LabOps stack..."
 	$(COMPOSE) restart
 
 .PHONY: status
@@ -93,67 +96,126 @@ logs:
 
 .PHONY: provision
 provision:
-	@echo ">> Provisioning lab VMs..."
+	@echo "▶ Provisioning lab VMs..."
 	@bash proxmox/provision.sh windows-client
 
 .PHONY: teardown
 teardown:
-	@echo ">> Tearing down lab VMs..."
+	@echo "▶ Tearing down lab VMs..."
 	@bash proxmox/provision.sh teardown
 
 # ── Health ────────────────────────────────────────────────────────────────────
 
 .PHONY: health
 health:
-	@echo ">> Running health check..."
 	@bash scripts/health-check.sh
+
+# ── Dependency Installation ─────────────────────────────────────────────────
+
+.PHONY: _install-deps
+_install-deps:
+	@echo ""
+	@echo "╔══════════════════════════════════════════════════════════╗"
+	@echo "║  LabOps — Installing Dependencies                       ║"
+	@echo "╚══════════════════════════════════════════════════════════╝"
+	@echo ""
+	@# ── Homebrew ──
+	@if command -v brew >/dev/null 2>&1; then \
+		echo "✅ Homebrew is installed"; \
+	else \
+		echo "▶ Installing Homebrew..."; \
+		/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
+		echo "✅ Homebrew installed"; \
+	fi
+	@# ── Docker Desktop ──
+	@if command -v docker >/dev/null 2>&1; then \
+		echo "✅ Docker is installed"; \
+	else \
+		echo "▶ Installing Docker Desktop (this may take a few minutes)..."; \
+		brew install --cask docker; \
+		echo "✅ Docker Desktop installed"; \
+		echo ""; \
+		echo "⚠️  Docker Desktop needs to be started manually the first time."; \
+		echo "   Please open Docker Desktop from your Applications folder,"; \
+		echo "   wait for it to finish starting, then run 'make install' again."; \
+		echo ""; \
+		exit 1; \
+	fi
+	@# ── Terraform ──
+	@if command -v terraform >/dev/null 2>&1; then \
+		echo "✅ Terraform is installed"; \
+	else \
+		echo "▶ Installing Terraform..."; \
+		brew install terraform; \
+		echo "✅ Terraform installed"; \
+	fi
+	@# ── Ansible ──
+	@if command -v ansible-playbook >/dev/null 2>&1; then \
+		echo "✅ Ansible is installed"; \
+	else \
+		echo "▶ Installing Ansible..."; \
+		brew install ansible; \
+		echo "✅ Ansible installed"; \
+	fi
+	@# ── Python packages ──
+	@echo "▶ Checking Python packages..."
+	@pip3 install -q pywinrm requests 2>/dev/null || \
+		pip3 install --user -q pywinrm requests 2>/dev/null || \
+		echo "⚠️  Could not install Python packages. Run manually: pip3 install pywinrm requests"
+	@echo "✅ Python packages ready"
+	@echo ""
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
 .PHONY: _check-docker
 _check-docker:
-	@echo ">> Checking prerequisites..."
-	@docker info > /dev/null 2>&1 || (echo "ERROR: Docker is not running. Start Docker Desktop first." && exit 1)
-	@echo "   Docker is running"
-	@docker compose version > /dev/null 2>&1 || (echo "ERROR: Docker Compose not found. Update Docker Desktop." && exit 1)
-	@echo "   Docker Compose available"
+	@echo "▶ Verifying Docker..."
+	@docker info > /dev/null 2>&1 || (echo "❌ Docker is not running. Start Docker Desktop first." && exit 1)
+	@echo "✅ Docker is running"
+	@docker compose version > /dev/null 2>&1 || (echo "❌ Docker Compose not found. Update Docker Desktop." && exit 1)
+	@echo "✅ Docker Compose available"
 
 .PHONY: _env
 _env:
 	@if [ ! -f .env ]; then \
-		echo ">> Creating .env from .env.example..."; \
+		echo "▶ Creating .env from template..."; \
 		cp .env.example .env; \
-		echo "   .env created from template"; \
+		echo "✅ .env created — edit it with your Proxmox credentials when ready"; \
 	else \
-		echo "   .env exists"; \
+		echo "✅ .env exists"; \
 	fi
 	@N8N_PW=$$(grep '^N8N_PASSWORD=' .env 2>/dev/null | cut -d'=' -f2-); \
 	if [ -z "$$N8N_PW" ]; then \
 		echo ""; \
-		echo "ERROR: N8N_PASSWORD is not set in .env"; \
-		echo "       Edit .env and set a value for N8N_PASSWORD before continuing."; \
-		echo ""; \
-		exit 1; \
+		echo "⚠️  N8N_PASSWORD is not set in .env"; \
+		echo "   Generating a random password..."; \
+		NEW_PW=$$(python3 -c "import secrets; print(secrets.token_urlsafe(16))"); \
+		if [ "$$(uname)" = "Darwin" ]; then \
+			sed -i '' "s/^N8N_PASSWORD=$$/N8N_PASSWORD=$$NEW_PW/" .env; \
+		else \
+			sed -i "s/^N8N_PASSWORD=$$/N8N_PASSWORD=$$NEW_PW/" .env; \
+		fi; \
+		echo "✅ N8N_PASSWORD auto-generated: $$NEW_PW"; \
 	else \
-		echo "   N8N_PASSWORD is set"; \
+		echo "✅ N8N_PASSWORD is set"; \
 	fi
 
 .PHONY: _up
 _up:
-	@echo ">> Starting containers..."
+	@echo "▶ Starting containers..."
 	$(COMPOSE) up -d
 
 .PHONY: _wait-healthy
 _wait-healthy:
-	@echo ">> Waiting for labops-guac-postgres to be healthy (up to 60s)..."
+	@echo "▶ Waiting for services to be healthy (up to 60s)..."
 	@for i in $$(seq 1 12); do \
 		if docker inspect --format='{{.State.Health.Status}}' labops-guac-postgres 2>/dev/null | grep -q healthy; then \
-			echo "   labops-guac-postgres is healthy"; \
+			echo "✅ All services healthy"; \
 			break; \
 		fi; \
 		if [ $$i -eq 12 ]; then \
-			echo "WARNING: labops-guac-postgres health check timed out (60s)"; \
-			echo "         It may still be initializing. Check with: make status"; \
+			echo "⚠️  Health check timed out — services may still be starting"; \
+			echo "   Check with: make status"; \
 		fi; \
 		printf "."; \
 		sleep 5; \
@@ -163,7 +225,7 @@ _wait-healthy:
 
 .PHONY: clean
 clean:
-	@echo "WARNING: This will stop all containers and delete all volumes."
+	@echo "⚠️  This will stop all containers and delete all volumes."
 	@read -p "Are you sure? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 0
 	$(COMPOSE) down -v
-	@echo "All containers and volumes removed"
+	@echo "✅ All containers and volumes removed"

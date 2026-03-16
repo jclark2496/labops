@@ -50,13 +50,17 @@ make install
 
 ## Prerequisites
 
-| Requirement | Notes |
-|---|---|
-| **Docker Desktop** | Must be running before `make install` |
-| **Proxmox VE** | Hypervisor with at least one Windows VM template |
-| **Proxmox API Token** | Create in Datacenter → Permissions → API Tokens |
-| **Terraform** | `brew install terraform` (only for VM provisioning) |
-| **Ansible** | `brew install ansible` + `pip3 install pywinrm` (only for VM config) |
+| Requirement | Auto-installed? | Notes |
+|---|---|---|
+| **Homebrew** | Yes | Package manager for macOS |
+| **Docker Desktop** | Yes | You'll need to open it once after install |
+| **Terraform** | Yes | For VM provisioning |
+| **Ansible** | Yes | For VM configuration |
+| **Python packages** | Yes | pywinrm, requests |
+| **Proxmox VE** | No | Your hypervisor with Windows VM templates |
+| **Proxmox API Token** | No | Create in Datacenter → Permissions → API Tokens |
+
+`make install` automatically installs all tools marked "Yes" — you don't need to install anything manually except Proxmox setup.
 
 ## Quick Start
 
@@ -69,11 +73,13 @@ make install
 ```
 
 This will:
-1. Check that Docker is running
-2. Create `.env` from `.env.example` (you'll need to fill in your values)
+1. Install Homebrew, Docker Desktop, Terraform, Ansible, and Python packages (if not present)
+2. Create `.env` and auto-generate passwords
 3. Start all 6 containers
 4. Wait for services to be healthy
 5. Print service URLs
+
+If Docker Desktop was just installed, you'll be prompted to open it first, then re-run `make install`.
 
 ### 2. Configure Your Environment
 
