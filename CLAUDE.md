@@ -56,6 +56,10 @@ Proxmox Server (user-configured IP)
 | `n8n/workflows/vm_management.json` | VM CRUD API via Proxmox REST |
 | `n8n/workflows/container_health.json` | Container status + config API |
 | `guacamole/init/01-initdb.sql` | Guacamole PostgreSQL schema (auto-runs on first start) |
+| `proxmox/create-template.sh` | Creates Windows 11 template VM via Proxmox REST API |
+| `proxmox/finalize-template.sh` | Finalizes template: Ansible config + Sysprep + convert to template |
+| `proxmox/ansible/finalize-template.yml` | Ansible playbook: configure Windows, install QEMU agent, Sysprep |
+| `proxmox/TEMPLATE-GUIDE.md` | Step-by-step template creation guide for SEs |
 | `proxmox/terraform/main.tf` | VM provisioning (lab-win11, lab-win11-unmanaged, lab-winserver) |
 | `proxmox/ansible/setup-vm.yml` | VM config: disable firewall, enable RDP, create demo user |
 | `proxmox/provision.sh` | Terraform + Ansible wrapper script |
@@ -126,6 +130,9 @@ All from `.env` (gitignored). See `.env.example` for documentation.
 | `PROXMOX_NODE` | For VM mgmt | n8n workflows, provision.sh |
 | `PROXMOX_TOKEN_ID` | For VM mgmt | n8n workflows, Terraform |
 | `PROXMOX_TOKEN_SECRET` | For VM mgmt | n8n workflows, Terraform |
+| `WIN11_ISO` | For template | create-template.sh |
+| `VIRTIO_ISO` | No (default: virtio-win.iso) | create-template.sh |
+| `TEMPLATE_VM_ID` | No (default: 100) | create-template.sh, finalize-template.sh |
 | `GUAC_ADMIN_USER` | No (default: guacadmin) | Dashboard RDP connect |
 | `GUAC_ADMIN_PASSWORD` | No (default: guacadmin) | Dashboard RDP connect |
 | `LAB_VM_USER` | No (default: demo) | Dashboard RDP connect, Ansible |
@@ -141,6 +148,8 @@ All from `.env` (gitignored). See `.env.example` for documentation.
 | `make up/down/restart` | Standard Docker Compose lifecycle |
 | `make status` | `docker compose ps` |
 | `make logs` | `docker compose logs -f` |
+| `make create-template` | Creates Windows 11 template VM via Proxmox API |
+| `make finalize-template` | Runs Ansible finalization + Sysprep + converts VM to template |
 | `make provision` | Runs `proxmox/provision.sh windows-client` |
 | `make teardown` | Runs `proxmox/provision.sh teardown` |
 | `make health` | Runs `scripts/health-check.sh` |

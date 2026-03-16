@@ -1,0 +1,146 @@
+---
+# proxmox/ansible/finalize-template.yml
+# Configures a freshly-installed Windows 11 VM and prepares it as a Proxmox template.
+#
+# This playbook connects via WinRM, configures the OS for lab use, and runs Sysprep
+# to generalize the image. After Sysprep the VM shuts down automatically.
+#
+# Usage:
+#   ansible-playbook -i inventory_template.ini finalize-template.yml
+#
+# Variables (from .env or extra-vars):
+#   lab_vm_user     - demo user account name (default: demo)
+#   lab_vm_password - demo user password (default: Demo1234!)
+
+- name: Finalize Windows 11 Template
+  hosts: template
+  gather_facts: false
+
+  vars:
+    ansible_connection: winrm
+    ansible_port: 5985
+    ansible_winrm_transport: ntlm
+    ansible_winrm_server_cert_validation: ignore
+    lab_vm_user: "{{ lookup('env', 'LAB_VM_USER') | default('demo', true) }}"
+    lab_vm_password: "{{ lookup('env', 'LAB_VM_PASSWORD') | default('Demo1234!', true) }}"
+
+  tasks:
+    # ── 1. Ensure WinRM service is running ─────────────────────────────────
+    - name: Ensure WinRM service is running
+      win_service:
+        name: WinRM
+        state: started
+        start_mode: auto
+
+    # ── 2. Disable Windows Firewall (all profiles) ────────────────────────
+    - name: Disable Windows Firewall — Domain profile
+      win_shell: Set-NetFirewallProfile -Profile Domain -Enabled False
+
+    - name: Disable Windows Firewall — Private profile
+      win_shell: Set-NetFirewallProfile -Profile Private -Enabled False
+
+    - name: Disable Windows Firewall — Public profile
+      win_shell: Set-NetFirewallProfile -Profile Public -Enabled False
+
+    # ── 3. Enable Remote Desktop (RDP) ────────────────────────────────────
+    - name: Enable RDP
+      win_regedit:
+        path: HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server
+        name: fDenyTSConnections
+        data: 0
+        type: dword
+
+    - name: Allow RDP through firewall
+      win_shell: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+      ignore_errors: true
+
+    # ── 4. Create demo user ───────────────────────────────────────────────
+    - name: Create demo user account
+      win_user:
+        name: "{{ lab_vm_user }}"
+        password: "{{ lab_vm_password }}"
+        state: present
+        password_never_expires: true
+        user_cannot_change_password: false
+        account_disabled: false
+
+    # ── 5. Add demo user to Administrators group ──────────────────────────
+    - name: Add demo user to Administrators
+      win_group_membership:
+        name: Administrators
+        members:
+          - "{{ lab_vm_user }}"
+        state: present
+
+    # ── 6. Install QEMU Guest Agent ──────────────────────────────────────
+    - name: Check if VirtIO ISO is mounted (D: or E:)
+      win_shell: |
+        $drives = @('D:', 'E:', 'F:')
+        foreach ($d in $drives) {
+          $installer = "$d\guest-agent\qemu-ga-x86_64.msi"
+          if (Test-Path $installer) {
+            Write-Output $installer
+            break
+          }
+        }
+      register: virtio_installer
+      ignore_errors: true
+
+    - name: Install QEMU Guest Agent from VirtIO ISO
+      win_package:
+        path: "{{ virtio_installer.stdout_lines[0] }}"
+        state: present
+      when: virtio_installer.stdout_lines | length > 0
+      ignore_errors: true
+
+    - name: Download QEMU Guest Agent if not found on ISO
+      win_shell: |
+        $url = "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-qemu-ga/qemu-ga-x86_64.msi"
+        $dest = "C:\Windows\Temp\qemu-ga-x86_64.msi"
+        Invoke-WebRequest -Uri $url -OutFile $dest
+        Start-Process msiexec.exe -ArgumentList "/i `"$dest`" /qn" -Wait
+      when: virtio_installer.stdout_lines | length == 0
+      ignore_errors: true
+
+    # ── 7. Configure auto-login for demo user ────────────────────────────
+    - name: Configure auto-login — DefaultUserName
+      win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
+        name: DefaultUserName
+        data: "{{ lab_vm_user }}"
+        type: string
+
+    - name: Configure auto-login — DefaultPassword
+      win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
+        name: DefaultPassword
+        data: "{{ lab_vm_password }}"
+        type: string
+
+    - name: Configure auto-login — AutoAdminLogon
+      win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
+        name: AutoAdminLogon
+        data: "1"
+        type: string
+
+    # ── 8. Add Windows Defender exclusion for C:\Users\Public ─────────────
+    - name: Add Defender exclusion for C:\Users\Public
+      win_shell: Add-MpPreference -ExclusionPath "C:\Users\Public"
+      ignore_errors: true
+
+    # ── 9. Run Sysprep (VM will shut down automatically) ─────────────────
+    - name: Run Sysprep to generalize the image
+      win_shell: |
+        Start-Process -FilePath "C:\Windows\System32\Sysprep\sysprep.exe" `
+          -ArgumentList "/generalize /oobe /shutdown" `
+          -Wait
+      async: 300
+      poll: 0
+      register: sysprep_job
+
+    - name: Notify — Sysprep started
+      debug:
+        msg: >
+          Sysprep has been launched. The VM will generalize and shut down automatically.
+          This may take 2-5 minutes.

@@ -104,6 +104,25 @@ LAB_VM_PASSWORD=<your-vm-password>
 
 Navigate to `http://localhost:8080` to access the LabOps Control Center.
 
+## Template Setup
+
+Before you can provision lab VMs, you need a Windows 11 template on Proxmox. This is a one-time setup:
+
+```bash
+make install                # Install tools and start LabOps
+# Edit .env with your Proxmox credentials and ISO filenames
+make create-template        # Create the template VM and boot Windows ISO
+```
+
+Install Windows 11 in the Proxmox console (see `proxmox/TEMPLATE-GUIDE.md` for a full walkthrough), then:
+
+```bash
+make finalize-template      # Configure Windows, Sysprep, convert to template
+make provision              # Clone the template into lab VMs
+```
+
+After the template exists, you only need `make provision` to create new lab VMs.
+
 ## Service URLs
 
 | Service | URL | Purpose |
@@ -123,6 +142,8 @@ Navigate to `http://localhost:8080` to access the LabOps Control Center.
 | `make restart` | Restart all containers |
 | `make status` | Show container health |
 | `make logs` | Tail all container logs |
+| `make create-template` | Create a Windows 11 template VM on Proxmox |
+| `make finalize-template` | Finalize template (Sysprep + convert to template) |
 | `make provision` | Provision a Windows 11 lab VM |
 | `make teardown` | Destroy all lab VMs (keeps templates) |
 | `make health` | Run full health check |
@@ -248,14 +269,18 @@ labops/
 │   └── init/
 │       └── 01-initdb.sql        # Guacamole PostgreSQL schema
 ├── proxmox/
+│   ├── create-template.sh       # Create Windows 11 template VM via API
+│   ├── finalize-template.sh     # Finalize template (Ansible + Sysprep + convert)
 │   ├── provision.sh             # VM provisioning wrapper
+│   ├── TEMPLATE-GUIDE.md        # Step-by-step template creation guide
 │   ├── terraform/
 │   │   ├── main.tf              # VM resource definitions
 │   │   ├── variables.tf         # Input variables
 │   │   └── terraform.tfvars.example
 │   └── ansible/
 │       ├── inventory.ini        # VM host inventory
-│       └── setup-vm.yml         # VM configuration playbook
+│       ├── setup-vm.yml         # VM configuration playbook
+│       └── finalize-template.yml # Template finalization playbook
 └── scripts/
     └── health-check.sh          # CLI health check for all services
 ```

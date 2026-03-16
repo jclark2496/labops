@@ -9,6 +9,8 @@
 #   make restart     → restart all containers
 #   make status      → show container health
 #   make logs        → tail all logs
+#   make create-template → create Windows 11 template VM
+#   make finalize-template → finalize template (Sysprep + convert)
 #   make provision   → provision lab VMs
 #   make teardown    → tear down lab VMs
 #   make health      → run health check
@@ -32,6 +34,8 @@ help:
 	@echo "  make restart      Restart all containers"
 	@echo "  make status       Show container health"
 	@echo "  make logs         Tail all container logs"
+	@echo "  make create-template   Create Windows 11 template VM"
+	@echo "  make finalize-template Finalize template (Sysprep + convert)"
 	@echo "  make provision    Provision lab VMs (windows-client)"
 	@echo "  make teardown     Tear down lab VMs"
 	@echo "  make health       Run health check"
@@ -91,6 +95,18 @@ status:
 .PHONY: logs
 logs:
 	$(COMPOSE) logs -f
+
+# ── Template Creation ─────────────────────────────────────────────────────────
+
+.PHONY: create-template
+create-template:
+	@echo "▶ Creating Windows 11 template VM..."
+	@bash proxmox/create-template.sh
+
+.PHONY: finalize-template
+finalize-template:
+	@echo "▶ Finalizing Windows 11 template..."
+	@bash proxmox/finalize-template.sh
 
 # ── Provisioning ──────────────────────────────────────────────────────────────
 
