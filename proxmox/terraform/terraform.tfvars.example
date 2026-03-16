@@ -1,0 +1,28 @@
+# LabOps — Terraform Variables
+# Copy this file to terraform.tfvars and fill in your values.
+# terraform.tfvars is gitignored and will NOT be committed.
+
+# Proxmox API URL — your Proxmox host
+# Example: "https://192.168.1.2:8006"
+proxmox_url = ""
+
+# Proxmox node name — run 'pvesh get /nodes' on your Proxmox host to find this
+# Example: "pm1"
+proxmox_node = ""
+
+# Proxmox API token — create in Proxmox UI: Datacenter → Permissions → API Tokens
+# Required permissions: PVEVMAdmin + PVEDatastoreAdmin + PVESDNUser
+# Example: "terraform-prov@pve!terraform"
+proxmox_token_id = ""
+
+# Proxmox API token secret — shown once when you create the token
+proxmox_token_secret = ""
+
+# Template VM IDs — these must exist on your Proxmox host before provisioning
+# win11_template_id     = 100
+# unmanaged_template_id = 102
+# winserver_template_id = 101
+
+# How many VMs to create
+# win11_count     = 1
+# winserver_count = 0

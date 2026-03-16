@@ -1,0 +1,230 @@
+{
+  "name": "LabOps — VM Management API",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "vms",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-list-vms",
+      "name": "Webhook: List VMs",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 200],
+      "webhookId": "labops-list-vms"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.PROXMOX_URL }}/api2/json/nodes/{{ $env.PROXMOX_NODE }}/qemu",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "PVEAPIToken={{ $env.PROXMOX_TOKEN_ID }}={{ $env.PROXMOX_TOKEN_SECRET }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "http-proxmox-list",
+      "name": "GET Proxmox VMs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Proxmox API response and format for dashboard\nconst items = $input.all();\nconst response = items[0]?.json;\nconst vmList = response?.data || [];\n\n// Filter to lab VMs (IDs 200-299) and format\nconst vms = vmList\n  .filter(vm => vm.vmid >= 200 && vm.vmid < 300)\n  .map(vm => ({\n    vmid: vm.vmid,\n    name: vm.name || `vm-${vm.vmid}`,\n    status: vm.status,\n    uptime: vm.uptime || 0,\n    cpu: vm.cpu || 0,\n    mem: vm.mem || 0,\n    maxmem: vm.maxmem || 0,\n    tags: vm.tags || '',\n    ip: null // IP requires a separate QEMU agent call\n  }))\n  .sort((a, b) => a.vmid - b.vmid);\n\nreturn [{ json: { vms } }];"
+      },
+      "id": "code-format-vms",
+      "name": "Format VM List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      },
+      "id": "respond-list-vms",
+      "name": "Respond: VM List",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [920, 200]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vms/:vmid/start",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-start-vm",
+      "name": "Webhook: Start VM",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 440],
+      "webhookId": "labops-start-vm"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.PROXMOX_URL }}/api2/json/nodes/{{ $env.PROXMOX_NODE }}/qemu/{{ $json.params.vmid }}/status/start",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "PVEAPIToken={{ $env.PROXMOX_TOKEN_ID }}={{ $env.PROXMOX_TOKEN_SECRET }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "http-start-vm",
+      "name": "POST Start VM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 440]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, action: 'start', vmid: $('Webhook: Start VM').first().json.params.vmid }) }}"
+      },
+      "id": "respond-start-vm",
+      "name": "Respond: Start VM",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [700, 440]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vms/:vmid/stop",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-stop-vm",
+      "name": "Webhook: Stop VM",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 640],
+      "webhookId": "labops-stop-vm"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.PROXMOX_URL }}/api2/json/nodes/{{ $env.PROXMOX_NODE }}/qemu/{{ $json.params.vmid }}/status/shutdown",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "PVEAPIToken={{ $env.PROXMOX_TOKEN_ID }}={{ $env.PROXMOX_TOKEN_SECRET }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "http-stop-vm",
+      "name": "POST Stop VM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 640]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, action: 'stop', vmid: $('Webhook: Stop VM').first().json.params.vmid }) }}"
+      },
+      "id": "respond-stop-vm",
+      "name": "Respond: Stop VM",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [700, 640]
+    },
+    {
+      "parameters": {
+        "httpMethod": "DELETE",
+        "path": "vms/:vmid/destroy",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-destroy-vm",
+      "name": "Webhook: Destroy VM",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 840],
+      "webhookId": "labops-destroy-vm"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ $env.PROXMOX_URL }}/api2/json/nodes/{{ $env.PROXMOX_NODE }}/qemu/{{ $json.params.vmid }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "PVEAPIToken={{ $env.PROXMOX_TOKEN_ID }}={{ $env.PROXMOX_TOKEN_SECRET }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "http-destroy-vm",
+      "name": "DELETE Destroy VM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 840]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, action: 'destroy', vmid: $('Webhook: Destroy VM').first().json.params.vmid }) }}"
+      },
+      "id": "respond-destroy-vm",
+      "name": "Respond: Destroy VM",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [700, 840]
+    }
+  ],
+  "connections": {
+    "Webhook: List VMs": { "main": [[{ "node": "GET Proxmox VMs", "type": "main", "index": 0 }]] },
+    "GET Proxmox VMs": { "main": [[{ "node": "Format VM List", "type": "main", "index": 0 }]] },
+    "Format VM List": { "main": [[{ "node": "Respond: VM List", "type": "main", "index": 0 }]] },
+    "Webhook: Start VM": { "main": [[{ "node": "POST Start VM", "type": "main", "index": 0 }]] },
+    "POST Start VM": { "main": [[{ "node": "Respond: Start VM", "type": "main", "index": 0 }]] },
+    "Webhook: Stop VM": { "main": [[{ "node": "POST Stop VM", "type": "main", "index": 0 }]] },
+    "POST Stop VM": { "main": [[{ "node": "Respond: Stop VM", "type": "main", "index": 0 }]] },
+    "Webhook: Destroy VM": { "main": [[{ "node": "DELETE Destroy VM", "type": "main", "index": 0 }]] },
+    "DELETE Destroy VM": { "main": [[{ "node": "Respond: Destroy VM", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [{ "name": "labops" }]
+}

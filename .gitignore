@@ -1,0 +1,21 @@
+# Environment secrets
+.env
+
+# Terraform
+proxmox/terraform/terraform.tfvars
+proxmox/terraform/terraform.tfstate
+proxmox/terraform/terraform.tfstate.backup
+proxmox/terraform/.terraform/
+proxmox/terraform/.terraform.lock.hcl
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node (n8n data)
+node_modules/

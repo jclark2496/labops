@@ -1,0 +1,80 @@
+---
+# proxmox/ansible/setup-vm.yml
+# Configure a freshly cloned lab VM: enable RDP, create demo user, configure WinRM.
+# Run after VM boots from template clone.
+#
+# Usage:
+#   ansible-playbook -i inventory.ini setup-vm.yml
+#   ansible-playbook -i inventory.ini setup-vm.yml --limit win11_vms
+
+- name: Configure Lab VM
+  hosts: all_vms
+  gather_facts: yes
+
+  vars:
+    demo_user: "{{ lookup('env', 'LAB_VM_USER') | default('demo', true) }}"
+    demo_password: "{{ lookup('env', 'LAB_VM_PASSWORD') }}"
+
+  tasks:
+
+    # ── Security OFF (demo/lab environment only) ───────────────────────────
+
+    - name: Disable Windows Firewall
+      win_shell: |
+        Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+      ignore_errors: yes
+
+    - name: Disable Tamper Protection and Windows Defender
+      win_shell: |
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender\Features" `
+          -Name "TamperProtection" -Value 4 -ErrorAction SilentlyContinue
+        Set-MpPreference -DisableRealtimeMonitoring $true
+        Set-MpPreference -DisableIOAVProtection $true
+        Set-MpPreference -DisableBehaviorMonitoring $true
+        Set-MpPreference -DisableScriptScanning $true
+        Add-MpPreference -ExclusionPath "C:\Users\Public"
+      ignore_errors: yes
+
+    - name: Enable RDP
+      win_regedit:
+        path: HKLM:\System\CurrentControlSet\Control\Terminal Server
+        name: fDenyTSConnections
+        data: 0
+        type: dword
+
+    - name: Allow RDP through firewall
+      win_shell: |
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+      ignore_errors: yes
+
+    # ── Demo user account ──────────────────────────────────────────────────
+
+    - name: Create demo user account
+      win_user:
+        name: "{{ demo_user }}"
+        password: "{{ demo_password }}"
+        password_never_expires: yes
+        groups:
+          - Administrators
+        state: present
+
+    # ── Enable WinRM for Ansible ───────────────────────────────────────────
+
+    - name: Configure WinRM
+      win_shell: |
+        winrm quickconfig -quiet
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        winrm set winrm/config/service/auth '@{Basic="true"}'
+      ignore_errors: yes
+
+    # ── Verification ───────────────────────────────────────────────────────
+
+    - name: Get VM hostname and IP
+      win_shell: |
+        $ip = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.IPAddress -notlike "127.*"} | Select-Object -First 1).IPAddress
+        Write-Output "Hostname: $env:COMPUTERNAME | IP: $ip"
+      register: vm_info
+
+    - name: Print VM info
+      debug:
+        msg: "{{ vm_info.stdout }}"

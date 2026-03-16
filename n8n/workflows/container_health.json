@@ -1,0 +1,122 @@
+{
+  "name": "LabOps — Container Health & Config API",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "containers",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-containers",
+      "name": "Webhook: Containers",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 200],
+      "webhookId": "labops-containers"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Query Docker socket for labops container status\nconst { execSync } = require('child_process');\n\ntry {\n  const raw = execSync(\n    'docker ps -a --filter \"name=labops-\" --format \"{{.Names}}|{{.Status}}|{{.State}}\"',\n    { encoding: 'utf-8', timeout: 10000 }\n  );\n\n  const containers = raw.trim().split('\\n').filter(Boolean).map(line => {\n    const [name, statusText, state] = line.split('|');\n    let health = null;\n    if (statusText.includes('healthy')) health = 'healthy';\n    else if (statusText.includes('unhealthy')) health = 'unhealthy';\n    else if (statusText.includes('starting')) health = 'starting';\n    return { name, state, health, statusText };\n  });\n\n  return [{ json: { containers } }];\n} catch(e) {\n  return [{ json: { containers: [], error: e.message } }];\n}"
+      },
+      "id": "code-docker-status",
+      "name": "Get Docker Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      },
+      "id": "respond-containers",
+      "name": "Respond: Containers",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [700, 200]
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "health",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-health",
+      "name": "Webhook: Health",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 440],
+      "webhookId": "labops-health"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate health check\nconst { execSync } = require('child_process');\n\nconst expected = [\n  'labops-nginx', 'labops-n8n', 'labops-guacamole',\n  'labops-guacd', 'labops-guac-postgres', 'labops-portainer'\n];\n\nlet healthy = 0;\nlet total = expected.length;\n\ntry {\n  const raw = execSync(\n    'docker ps --filter \"name=labops-\" --format \"{{.Names}}\"',\n    { encoding: 'utf-8', timeout: 5000 }\n  );\n  const running = raw.trim().split('\\n').filter(Boolean);\n  healthy = expected.filter(name => running.includes(name)).length;\n} catch(e) {\n  // Docker not available\n}\n\nconst status = healthy === total ? 'healthy' : healthy > 0 ? 'degraded' : 'down';\n\nreturn [{ json: { status, healthy, total, timestamp: new Date().toISOString() } }];"
+      },
+      "id": "code-health",
+      "name": "Aggregate Health",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 440]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      },
+      "id": "respond-health",
+      "name": "Respond: Health",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [700, 440]
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "config",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-config",
+      "name": "Webhook: Config",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 640],
+      "webhookId": "labops-config"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return dashboard configuration from environment variables\n// This avoids hardcoding credentials in the HTML\nreturn [{\n  json: {\n    guacProxy:     '/guacamole',\n    guacAdmin:     process.env.GUAC_ADMIN_USER || 'guacadmin',\n    guacAdminPw:   process.env.GUAC_ADMIN_PASSWORD || 'guacadmin',\n    guacDs:        'postgresql',\n    vmUser:        process.env.LAB_VM_USER || 'demo',\n    vmPassword:    process.env.LAB_VM_PASSWORD || '',\n    proxmoxUrl:    process.env.PROXMOX_URL || '',\n  }\n}];"
+      },
+      "id": "code-config",
+      "name": "Build Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 640]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      },
+      "id": "respond-config",
+      "name": "Respond: Config",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [700, 640]
+    }
+  ],
+  "connections": {
+    "Webhook: Containers": { "main": [[{ "node": "Get Docker Status", "type": "main", "index": 0 }]] },
+    "Get Docker Status": { "main": [[{ "node": "Respond: Containers", "type": "main", "index": 0 }]] },
+    "Webhook: Health": { "main": [[{ "node": "Aggregate Health", "type": "main", "index": 0 }]] },
+    "Aggregate Health": { "main": [[{ "node": "Respond: Health", "type": "main", "index": 0 }]] },
+    "Webhook: Config": { "main": [[{ "node": "Build Config", "type": "main", "index": 0 }]] },
+    "Build Config": { "main": [[{ "node": "Respond: Config", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [{ "name": "labops" }]
+}
