@@ -20,42 +20,14 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $env.PROXMOX_URL }}/api2/json/nodes/{{ $env.PROXMOX_NODE }}/qemu",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "PVEAPIToken={{ $env.PROXMOX_TOKEN_ID }}={{ $env.PROXMOX_TOKEN_SECRET }}"
-            }
-          ]
-        },
-        "options": {
-          "allowUnauthorizedCerts": true
-        }
+        "jsCode": "const { execSync } = require('child_process');\nconst fs = require('fs');\n\ntry {\n  // Read env from the container's environment file\n  let envVars = {};\n  try {\n    const procEnv = fs.readFileSync('/proc/1/environ', 'utf-8');\n    procEnv.split('\\0').forEach(line => {\n      const eq = line.indexOf('=');\n      if (eq > 0) envVars[line.substring(0, eq)] = line.substring(eq + 1);\n    });\n  } catch(e) {\n    return [{ json: { vms: [], error: 'Cannot read container environment: ' + e.message } }];\n  }\n\n  const url = envVars.PROXMOX_URL;\n  const node = envVars.PROXMOX_NODE;\n  const tokenId = envVars.PROXMOX_TOKEN_ID;\n  const tokenSecret = envVars.PROXMOX_TOKEN_SECRET;\n  \n  if (!url) return [{ json: { vms: [], error: 'PROXMOX_URL not configured in .env' } }];\n\n  const fetchScript = 'const https=require(\"https\");https.get(\"' + url + '/api2/json/nodes/' + node + '/qemu\",{headers:{\"Authorization\":\"PVEAPIToken=' + tokenId + '=' + tokenSecret + '\"},rejectUnauthorized:false},res=>{let d=\"\";res.on(\"data\",c=>d+=c);res.on(\"end\",()=>console.log(d))}).on(\"error\",e=>console.log(JSON.stringify({error:e.message})));';\n  \n  const raw = execSync('node -e \\'' + fetchScript + '\\'', { encoding: 'utf-8', timeout: 15000 });\n  const data = JSON.parse(raw);\n  \n  if (data.error) return [{ json: { vms: [], error: data.error } }];\n  \n  const vms = (data.data || [])\n    .filter(vm => vm.vmid >= 200 && vm.vmid < 300)\n    .map(vm => ({\n      vmid: vm.vmid,\n      name: vm.name || 'vm-' + vm.vmid,\n      status: vm.status,\n      ip: null,\n      uptime: vm.uptime || 0,\n      tags: vm.tags || ''\n    }));\n  \n  return [{ json: { vms } }];\n} catch(e) {\n  return [{ json: { vms: [], error: e.message } }];\n}"
       },
       "id": "http-proxmox-list",
-      "name": "GET Proxmox VMs",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        480,
-        200
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Parse Proxmox API response and format for dashboard\nconst items = $input.all();\nconst response = items[0]?.json;\nconst vmList = response?.data || [];\n\n// Filter to lab VMs (IDs 200-299) and format\nconst vms = vmList\n  .filter(vm => vm.vmid >= 200 && vm.vmid < 300)\n  .map(vm => ({\n    vmid: vm.vmid,\n    name: vm.name || `vm-${vm.vmid}`,\n    status: vm.status,\n    uptime: vm.uptime || 0,\n    cpu: vm.cpu || 0,\n    mem: vm.mem || 0,\n    maxmem: vm.maxmem || 0,\n    tags: vm.tags || '',\n    ip: null // IP requires a separate QEMU agent call\n  }))\n  .sort((a, b) => a.vmid - b.vmid);\n\nreturn [{ json: { vms } }];"
-      },
-      "id": "code-format-vms",
-      "name": "Format VM List",
+      "name": "Get Proxmox VMs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        700,
+        480,
         200
       ]
     },
@@ -92,27 +64,12 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "={{ $env.PROXMOX_URL }}/api2/json/nodes/{{ $env.PROXMOX_NODE }}/qemu/{{ $json.params.vmid }}/status/start",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "PVEAPIToken={{ $env.PROXMOX_TOKEN_ID }}={{ $env.PROXMOX_TOKEN_SECRET }}"
-            }
-          ]
-        },
-        "options": {
-          "allowUnauthorizedCerts": true
-        }
+        "jsCode": "const { execSync } = require('child_process');\nconst vmid = $input.first().json.params?.vmid || $input.first().json.body?.vmid;\nif (!vmid) return [{ json: { success: false, error: 'No vmid provided' } }];\n\ntry {\n  const url = process.env.PROXMOX_URL + '/api2/json/nodes/' + process.env.PROXMOX_NODE + '/qemu/' + vmid + '/status/start';\n  const auth = 'PVEAPIToken=' + process.env.PROXMOX_TOKEN_ID + '=' + process.env.PROXMOX_TOKEN_SECRET;\n  const script = `const https=require('https');const u=new URL('${url}');const req=https.request({hostname:u.hostname,port:u.port,path:u.pathname,method:'POST',headers:{'Authorization':'${auth}'},rejectUnauthorized:false},res=>{let d='';res.on('data',c=>d+=c);res.on('end',()=>console.log(JSON.stringify({status:res.statusCode})))});req.end();`;\n  const raw = execSync('node -e \"' + script.replace(/\"/g, '\\\\\\\\\"') + '\"', { encoding: 'utf-8', timeout: 15000 });\n  return [{ json: { success: true, action: 'start_vm', vmid: vmid } }];\n} catch(e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
       },
       "id": "http-start-vm",
-      "name": "POST Start VM",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "name": "Do Start VM",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         480,
         440
@@ -151,27 +108,12 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "={{ $env.PROXMOX_URL }}/api2/json/nodes/{{ $env.PROXMOX_NODE }}/qemu/{{ $json.params.vmid }}/status/shutdown",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "PVEAPIToken={{ $env.PROXMOX_TOKEN_ID }}={{ $env.PROXMOX_TOKEN_SECRET }}"
-            }
-          ]
-        },
-        "options": {
-          "allowUnauthorizedCerts": true
-        }
+        "jsCode": "const { execSync } = require('child_process');\nconst vmid = $input.first().json.params?.vmid || $input.first().json.body?.vmid;\nif (!vmid) return [{ json: { success: false, error: 'No vmid provided' } }];\n\ntry {\n  const url = process.env.PROXMOX_URL + '/api2/json/nodes/' + process.env.PROXMOX_NODE + '/qemu/' + vmid + '/status/shutdown';\n  const auth = 'PVEAPIToken=' + process.env.PROXMOX_TOKEN_ID + '=' + process.env.PROXMOX_TOKEN_SECRET;\n  const script = `const https=require('https');const u=new URL('${url}');const req=https.request({hostname:u.hostname,port:u.port,path:u.pathname,method:'POST',headers:{'Authorization':'${auth}'},rejectUnauthorized:false},res=>{let d='';res.on('data',c=>d+=c);res.on('end',()=>console.log(JSON.stringify({status:res.statusCode})))});req.end();`;\n  const raw = execSync('node -e \"' + script.replace(/\"/g, '\\\\\\\\\"') + '\"', { encoding: 'utf-8', timeout: 15000 });\n  return [{ json: { success: true, action: 'stop_vm', vmid: vmid } }];\n} catch(e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
       },
       "id": "http-stop-vm",
-      "name": "POST Stop VM",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "name": "Do Stop VM",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         480,
         640
@@ -210,27 +152,12 @@
     },
     {
       "parameters": {
-        "method": "DELETE",
-        "url": "={{ $env.PROXMOX_URL }}/api2/json/nodes/{{ $env.PROXMOX_NODE }}/qemu/{{ $json.params.vmid }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "PVEAPIToken={{ $env.PROXMOX_TOKEN_ID }}={{ $env.PROXMOX_TOKEN_SECRET }}"
-            }
-          ]
-        },
-        "options": {
-          "allowUnauthorizedCerts": true
-        }
+        "jsCode": "const { execSync } = require('child_process');\nconst vmid = $input.first().json.params?.vmid || $input.first().json.body?.vmid;\nif (!vmid) return [{ json: { success: false, error: 'No vmid provided' } }];\n\ntry {\n  const url = process.env.PROXMOX_URL + '/api2/json/nodes/' + process.env.PROXMOX_NODE + '/qemu/' + vmid + '/';\n  const auth = 'PVEAPIToken=' + process.env.PROXMOX_TOKEN_ID + '=' + process.env.PROXMOX_TOKEN_SECRET;\n  const script = `const https=require('https');const u=new URL('${url}');const req=https.request({hostname:u.hostname,port:u.port,path:u.pathname,method:'DELETE',headers:{'Authorization':'${auth}'},rejectUnauthorized:false},res=>{let d='';res.on('data',c=>d+=c);res.on('end',()=>console.log(JSON.stringify({status:res.statusCode})))});req.end();`;\n  const raw = execSync('node -e \"' + script.replace(/\"/g, '\\\\\\\\\"') + '\"', { encoding: 'utf-8', timeout: 15000 });\n  return [{ json: { success: true, action: 'destroy_vm', vmid: vmid } }];\n} catch(e) {\n  return [{ json: { success: false, error: e.message } }];\n}"
       },
       "id": "http-destroy-vm",
-      "name": "DELETE Destroy VM",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "name": "Do Destroy VM",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         480,
         840
@@ -256,29 +183,7 @@
       "main": [
         [
           {
-            "node": "GET Proxmox VMs",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "GET Proxmox VMs": {
-      "main": [
-        [
-          {
-            "node": "Format VM List",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Format VM List": {
-      "main": [
-        [
-          {
-            "node": "Respond: VM List",
+            "node": "Get Proxmox VMs",
             "type": "main",
             "index": 0
           }
@@ -289,18 +194,7 @@
       "main": [
         [
           {
-            "node": "POST Start VM",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "POST Start VM": {
-      "main": [
-        [
-          {
-            "node": "Respond: Start VM",
+            "node": "Do Start VM",
             "type": "main",
             "index": 0
           }
@@ -311,18 +205,7 @@
       "main": [
         [
           {
-            "node": "POST Stop VM",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "POST Stop VM": {
-      "main": [
-        [
-          {
-            "node": "Respond: Stop VM",
+            "node": "Do Stop VM",
             "type": "main",
             "index": 0
           }
@@ -333,14 +216,47 @@
       "main": [
         [
           {
-            "node": "DELETE Destroy VM",
+            "node": "Do Destroy VM",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "DELETE Destroy VM": {
+    "Get Proxmox VMs": {
+      "main": [
+        [
+          {
+            "node": "Respond: VM List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Do Start VM": {
+      "main": [
+        [
+          {
+            "node": "Respond: Start VM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Do Stop VM": {
+      "main": [
+        [
+          {
+            "node": "Respond: Stop VM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Do Destroy VM": {
       "main": [
         [
           {
