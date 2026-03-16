@@ -1,5 +1,5 @@
 {
-  "name": "LabOps — VM Management API",
+  "name": "LabOps \u2014 VM Management API",
   "nodes": [
     {
       "parameters": {
@@ -12,7 +12,10 @@
       "name": "Webhook: List VMs",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [260, 200],
+      "position": [
+        260,
+        200
+      ],
       "webhookId": "labops-list-vms"
     },
     {
@@ -38,7 +41,10 @@
       "name": "GET Proxmox VMs",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [480, 200]
+      "position": [
+        480,
+        200
+      ]
     },
     {
       "parameters": {
@@ -48,7 +54,10 @@
       "name": "Format VM List",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [700, 200]
+      "position": [
+        700,
+        200
+      ]
     },
     {
       "parameters": {
@@ -59,7 +68,10 @@
       "name": "Respond: VM List",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [920, 200]
+      "position": [
+        920,
+        200
+      ]
     },
     {
       "parameters": {
@@ -72,7 +84,10 @@
       "name": "Webhook: Start VM",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [260, 440],
+      "position": [
+        260,
+        440
+      ],
       "webhookId": "labops-start-vm"
     },
     {
@@ -98,7 +113,10 @@
       "name": "POST Start VM",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [480, 440]
+      "position": [
+        480,
+        440
+      ]
     },
     {
       "parameters": {
@@ -109,7 +127,10 @@
       "name": "Respond: Start VM",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [700, 440]
+      "position": [
+        700,
+        440
+      ]
     },
     {
       "parameters": {
@@ -122,7 +143,10 @@
       "name": "Webhook: Stop VM",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [260, 640],
+      "position": [
+        260,
+        640
+      ],
       "webhookId": "labops-stop-vm"
     },
     {
@@ -148,7 +172,10 @@
       "name": "POST Stop VM",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [480, 640]
+      "position": [
+        480,
+        640
+      ]
     },
     {
       "parameters": {
@@ -159,7 +186,10 @@
       "name": "Respond: Stop VM",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [700, 640]
+      "position": [
+        700,
+        640
+      ]
     },
     {
       "parameters": {
@@ -172,7 +202,10 @@
       "name": "Webhook: Destroy VM",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [260, 840],
+      "position": [
+        260,
+        840
+      ],
       "webhookId": "labops-destroy-vm"
     },
     {
@@ -198,7 +231,10 @@
       "name": "DELETE Destroy VM",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [480, 840]
+      "position": [
+        480,
+        840
+      ]
     },
     {
       "parameters": {
@@ -209,22 +245,120 @@
       "name": "Respond: Destroy VM",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [700, 840]
+      "position": [
+        700,
+        840
+      ]
     }
   ],
   "connections": {
-    "Webhook: List VMs": { "main": [[{ "node": "GET Proxmox VMs", "type": "main", "index": 0 }]] },
-    "GET Proxmox VMs": { "main": [[{ "node": "Format VM List", "type": "main", "index": 0 }]] },
-    "Format VM List": { "main": [[{ "node": "Respond: VM List", "type": "main", "index": 0 }]] },
-    "Webhook: Start VM": { "main": [[{ "node": "POST Start VM", "type": "main", "index": 0 }]] },
-    "POST Start VM": { "main": [[{ "node": "Respond: Start VM", "type": "main", "index": 0 }]] },
-    "Webhook: Stop VM": { "main": [[{ "node": "POST Stop VM", "type": "main", "index": 0 }]] },
-    "POST Stop VM": { "main": [[{ "node": "Respond: Stop VM", "type": "main", "index": 0 }]] },
-    "Webhook: Destroy VM": { "main": [[{ "node": "DELETE Destroy VM", "type": "main", "index": 0 }]] },
-    "DELETE Destroy VM": { "main": [[{ "node": "Respond: Destroy VM", "type": "main", "index": 0 }]] }
+    "Webhook: List VMs": {
+      "main": [
+        [
+          {
+            "node": "GET Proxmox VMs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Proxmox VMs": {
+      "main": [
+        [
+          {
+            "node": "Format VM List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format VM List": {
+      "main": [
+        [
+          {
+            "node": "Respond: VM List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Start VM": {
+      "main": [
+        [
+          {
+            "node": "POST Start VM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Start VM": {
+      "main": [
+        [
+          {
+            "node": "Respond: Start VM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Stop VM": {
+      "main": [
+        [
+          {
+            "node": "POST Stop VM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Stop VM": {
+      "main": [
+        [
+          {
+            "node": "Respond: Stop VM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Destroy VM": {
+      "main": [
+        [
+          {
+            "node": "DELETE Destroy VM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE Destroy VM": {
+      "main": [
+        [
+          {
+            "node": "Respond: Destroy VM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
   "settings": {
     "executionOrder": "v1"
   },
-  "tags": [{ "name": "labops" }]
+  "tags": [
+    {
+      "name": "labops"
+    }
+  ],
+  "id": "labopsVmMgmt01"
 }

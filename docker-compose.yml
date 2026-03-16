@@ -78,6 +78,15 @@ services:
       - PROXMOX_NODE=${PROXMOX_NODE:-}
       - PROXMOX_TOKEN_ID=${PROXMOX_TOKEN_ID:-}
       - PROXMOX_TOKEN_SECRET=${PROXMOX_TOKEN_SECRET:-}
+      # Dashboard config — served via /api/config for the front-end
+      - GUAC_ADMIN_USER=${GUAC_ADMIN_USER:-guacadmin}
+      - GUAC_ADMIN_PASSWORD=${GUAC_ADMIN_PASSWORD:-guacadmin}
+      - LAB_VM_USER=${LAB_VM_USER:-demo}
+      - LAB_VM_PASSWORD=${LAB_VM_PASSWORD:-}
+      - NGINX_PORT=${NGINX_PORT:-8080}
+      - GUAC_PORT=${GUAC_PORT:-8085}
+      - PORTAINER_PORT=${PORTAINER_PORT:-9000}
+      - N8N_EXT_PORT=${N8N_PORT:-5678}
     volumes:
       - n8n-data:/home/node/.n8n
       - ./n8n/workflows:/home/node/.n8n/workflows

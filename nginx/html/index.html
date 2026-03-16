@@ -681,7 +681,7 @@
         </div>
         <div class="panel-body">
           <div class="links-grid">
-            <a class="link-card" href="/guacamole" target="_blank">
+            <a class="link-card" id="link-guacamole" href="/guacamole" target="_blank">
               <div class="link-icon">🖥</div>
               <div class="link-label">
                 <span class="link-title">Guacamole</span>
@@ -771,9 +771,19 @@ async function loadConfig() {
     // Config endpoint not available — use defaults
   }
 
-  // Update quick links with actual URLs
+  // Update quick links with actual URLs and ports
+  const host = window.location.hostname;
   if (CONFIG.proxmoxUrl) {
     document.getElementById('link-proxmox').href = CONFIG.proxmoxUrl;
+  }
+  if (CONFIG.portainerPort) {
+    document.getElementById('link-portainer').href = `http://${host}:${CONFIG.portainerPort}`;
+  }
+  if (CONFIG.n8nPort) {
+    document.getElementById('link-n8n').href = `http://${host}:${CONFIG.n8nPort}`;
+  }
+  if (CONFIG.guacPort) {
+    document.getElementById('link-guacamole').href = `http://${host}:${CONFIG.guacPort}/guacamole`;
   }
 }
 

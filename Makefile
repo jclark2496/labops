@@ -45,7 +45,7 @@ help:
 # ── Install (first-time) ────────────────────────────────────────────────────
 
 .PHONY: install
-install: _install-deps _check-docker _env _up _wait-healthy _import-workflows
+install: _install-deps _check-docker _env _generate-config _up _wait-healthy _import-workflows
 	@echo ""
 	@echo "  _          _      ___"
 	@echo " | |    __ _| |__  / _ \ _ __  ___"
@@ -223,6 +223,23 @@ _env:
 			> proxmox/terraform/terraform.tfvars; \
 		echo "✅ terraform.tfvars generated"; \
 	fi
+
+.PHONY: _generate-config
+_generate-config:
+	@echo "▶ Generating dashboard config..."
+	@. .env 2>/dev/null; \
+	printf '{\n  "guacProxy": "/guacamole",\n  "guacAdmin": "%s",\n  "guacAdminPw": "%s",\n  "guacDs": "postgresql",\n  "vmUser": "%s",\n  "vmPassword": "%s",\n  "proxmoxUrl": "%s",\n  "nginxPort": "%s",\n  "guacPort": "%s",\n  "portainerPort": "%s",\n  "n8nPort": "%s"\n}' \
+		"$${GUAC_ADMIN_USER:-guacadmin}" \
+		"$${GUAC_ADMIN_PASSWORD:-guacadmin}" \
+		"$${LAB_VM_USER:-demo}" \
+		"$${LAB_VM_PASSWORD:-SEdemo2026}" \
+		"$${PROXMOX_URL:-}" \
+		"$${NGINX_PORT:-8080}" \
+		"$${GUAC_PORT:-8085}" \
+		"$${PORTAINER_PORT:-9000}" \
+		"$${N8N_PORT:-5678}" \
+		> nginx/html/config.json
+	@echo "✅ Dashboard config generated"
 
 .PHONY: _up
 _up:

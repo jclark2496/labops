@@ -88,50 +88,6 @@
         700,
         440
       ]
-    },
-    {
-      "parameters": {
-        "httpMethod": "GET",
-        "path": "config",
-        "responseMode": "responseNode",
-        "options": {}
-      },
-      "id": "webhook-config",
-      "name": "Webhook: Config",
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2,
-      "position": [
-        260,
-        640
-      ],
-      "webhookId": "labops-config"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Return dashboard configuration from environment variables\n// This avoids hardcoding credentials in the HTML\nreturn [{\n  json: {\n    guacProxy:     '/guacamole',\n    guacAdmin:     process.env.GUAC_ADMIN_USER || 'guacadmin',\n    guacAdminPw:   process.env.GUAC_ADMIN_PASSWORD || 'guacadmin',\n    guacDs:        'postgresql',\n    vmUser:        process.env.LAB_VM_USER || 'demo',\n    vmPassword:    process.env.LAB_VM_PASSWORD || '',\n    proxmoxUrl:    process.env.PROXMOX_URL || '',\n  }\n}];"
-      },
-      "id": "code-config",
-      "name": "Build Config",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        480,
-        640
-      ]
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ JSON.stringify($json) }}"
-      },
-      "id": "respond-config",
-      "name": "Respond: Config",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.1,
-      "position": [
-        700,
-        640
-      ]
     }
   ],
   "connections": {
@@ -173,28 +129,6 @@
         [
           {
             "node": "Respond: Health",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Webhook: Config": {
-      "main": [
-        [
-          {
-            "node": "Build Config",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Config": {
-      "main": [
-        [
-          {
-            "node": "Respond: Config",
             "type": "main",
             "index": 0
           }
