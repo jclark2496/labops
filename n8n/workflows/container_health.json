@@ -1,5 +1,5 @@
 {
-  "name": "LabOps — Container Health & Config API",
+  "name": "LabOps \u2014 Container Health & Config API",
   "nodes": [
     {
       "parameters": {
@@ -12,18 +12,24 @@
       "name": "Webhook: Containers",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [260, 200],
+      "position": [
+        260,
+        200
+      ],
       "webhookId": "labops-containers"
     },
     {
       "parameters": {
-        "jsCode": "// Query Docker socket for labops container status\nconst { execSync } = require('child_process');\n\ntry {\n  const raw = execSync(\n    'docker ps -a --filter \"name=labops-\" --format \"{{.Names}}|{{.Status}}|{{.State}}\"',\n    { encoding: 'utf-8', timeout: 10000 }\n  );\n\n  const containers = raw.trim().split('\\n').filter(Boolean).map(line => {\n    const [name, statusText, state] = line.split('|');\n    let health = null;\n    if (statusText.includes('healthy')) health = 'healthy';\n    else if (statusText.includes('unhealthy')) health = 'unhealthy';\n    else if (statusText.includes('starting')) health = 'starting';\n    return { name, state, health, statusText };\n  });\n\n  return [{ json: { containers } }];\n} catch(e) {\n  return [{ json: { containers: [], error: e.message } }];\n}"
+        "jsCode": "// Query Docker socket API for labops container status\nconst { execSync } = require('child_process');\n\ntry {\n  const script = `const http=require('http');const r=http.request({socketPath:'/var/run/docker.sock',path:'/containers/json?all=true'},s=>{let d='';s.on('data',c=>d+=c);s.on('end',()=>console.log(d))});r.end();`;\n  const raw = execSync('node -e \"' + script + '\"', { encoding: 'utf-8', timeout: 10000 });\n  const all = JSON.parse(raw);\n  const containers = all.filter(c => c.Names && c.Names[0] && c.Names[0].includes('labops-')).map(c => {\n    const name = c.Names[0].replace(/^\\//, '');\n    const state = c.State || 'unknown';\n    const statusText = c.Status || '';\n    let health = null;\n    if (statusText.includes('healthy') && !statusText.includes('unhealthy')) health = 'healthy';\n    else if (statusText.includes('unhealthy')) health = 'unhealthy';\n    else if (statusText.includes('starting')) health = 'starting';\n    else if (state === 'running') health = 'healthy';\n    return { name, state, health, statusText };\n  });\n  return [{ json: { containers } }];\n} catch(e) {\n  return [{ json: { containers: [], error: e.message } }];\n}"
       },
       "id": "code-docker-status",
       "name": "Get Docker Status",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [480, 200]
+      "position": [
+        480,
+        200
+      ]
     },
     {
       "parameters": {
@@ -34,7 +40,10 @@
       "name": "Respond: Containers",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [700, 200]
+      "position": [
+        700,
+        200
+      ]
     },
     {
       "parameters": {
@@ -47,18 +56,24 @@
       "name": "Webhook: Health",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [260, 440],
+      "position": [
+        260,
+        440
+      ],
       "webhookId": "labops-health"
     },
     {
       "parameters": {
-        "jsCode": "// Aggregate health check\nconst { execSync } = require('child_process');\n\nconst expected = [\n  'labops-nginx', 'labops-n8n', 'labops-guacamole',\n  'labops-guacd', 'labops-guac-postgres', 'labops-portainer'\n];\n\nlet healthy = 0;\nlet total = expected.length;\n\ntry {\n  const raw = execSync(\n    'docker ps --filter \"name=labops-\" --format \"{{.Names}}\"',\n    { encoding: 'utf-8', timeout: 5000 }\n  );\n  const running = raw.trim().split('\\n').filter(Boolean);\n  healthy = expected.filter(name => running.includes(name)).length;\n} catch(e) {\n  // Docker not available\n}\n\nconst status = healthy === total ? 'healthy' : healthy > 0 ? 'degraded' : 'down';\n\nreturn [{ json: { status, healthy, total, timestamp: new Date().toISOString() } }];"
+        "jsCode": "// Aggregate health check via Docker socket API\nconst { execSync } = require('child_process');\n\nconst expected = [\n  'labops-nginx', 'labops-n8n', 'labops-guacamole',\n  'labops-guacd', 'labops-guac-postgres', 'labops-portainer'\n];\n\nlet healthy = 0;\nconst total = expected.length;\n\ntry {\n  const script = `const http=require('http');const r=http.request({socketPath:'/var/run/docker.sock',path:'/containers/json'},s=>{let d='';s.on('data',c=>d+=c);s.on('end',()=>console.log(d))});r.end();`;\n  const raw = execSync('node -e \"' + script + '\"', { encoding: 'utf-8', timeout: 5000 });\n  const all = JSON.parse(raw);\n  const running = all.map(c => (c.Names && c.Names[0]) ? c.Names[0].replace(/^\\//, '') : '');\n  healthy = expected.filter(name => running.includes(name)).length;\n} catch(e) {}\n\nconst status = healthy === total ? 'healthy' : healthy > 0 ? 'degraded' : 'down';\nreturn [{ json: { status, healthy, total, timestamp: new Date().toISOString() } }];"
       },
       "id": "code-health",
       "name": "Aggregate Health",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [480, 440]
+      "position": [
+        480,
+        440
+      ]
     },
     {
       "parameters": {
@@ -69,7 +84,10 @@
       "name": "Respond: Health",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [700, 440]
+      "position": [
+        700,
+        440
+      ]
     },
     {
       "parameters": {
@@ -82,7 +100,10 @@
       "name": "Webhook: Config",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [260, 640],
+      "position": [
+        260,
+        640
+      ],
       "webhookId": "labops-config"
     },
     {
@@ -93,7 +114,10 @@
       "name": "Build Config",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [480, 640]
+      "position": [
+        480,
+        640
+      ]
     },
     {
       "parameters": {
@@ -104,19 +128,87 @@
       "name": "Respond: Config",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [700, 640]
+      "position": [
+        700,
+        640
+      ]
     }
   ],
   "connections": {
-    "Webhook: Containers": { "main": [[{ "node": "Get Docker Status", "type": "main", "index": 0 }]] },
-    "Get Docker Status": { "main": [[{ "node": "Respond: Containers", "type": "main", "index": 0 }]] },
-    "Webhook: Health": { "main": [[{ "node": "Aggregate Health", "type": "main", "index": 0 }]] },
-    "Aggregate Health": { "main": [[{ "node": "Respond: Health", "type": "main", "index": 0 }]] },
-    "Webhook: Config": { "main": [[{ "node": "Build Config", "type": "main", "index": 0 }]] },
-    "Build Config": { "main": [[{ "node": "Respond: Config", "type": "main", "index": 0 }]] }
+    "Webhook: Containers": {
+      "main": [
+        [
+          {
+            "node": "Get Docker Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Docker Status": {
+      "main": [
+        [
+          {
+            "node": "Respond: Containers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Health": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Health": {
+      "main": [
+        [
+          {
+            "node": "Respond: Health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Config": {
+      "main": [
+        [
+          {
+            "node": "Build Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Config": {
+      "main": [
+        [
+          {
+            "node": "Respond: Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
   "settings": {
     "executionOrder": "v1"
   },
-  "tags": [{ "name": "labops" }]
+  "tags": [
+    {
+      "name": "labops"
+    }
+  ],
+  "id": "labopsHealth01"
 }
