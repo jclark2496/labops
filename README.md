@@ -3,7 +3,7 @@
 One-command setup for a fully automated lab environment with Proxmox VM management, browser-based RDP, and a real-time dashboard.
 
 ```
-git clone https://github.com/<your-org>/labops.git
+git clone https://github.com/jclark2496/labops.git
 cd labops
 make install
 ```
@@ -67,7 +67,7 @@ make install
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/<your-org>/labops.git
+git clone https://github.com/jclark2496/labops.git
 cd labops
 make install
 ```
