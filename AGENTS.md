@@ -18,24 +18,22 @@ a web dashboard for monitoring and control. It is NOT an attack simulation tool.
 ```
 Docker Host (labops-net: 172.20.0.0/24)
   labops-nginx         172.20.0.50  :8080->80     Dashboard + reverse proxy
-  labops-n8n           172.20.0.30  :5678         Lab management API
+  labops-api           172.20.0.30  :3000(int)    LabOps API — lightweight Node.js server
   labops-guacamole     172.20.0.81  :8085->8080   Browser RDP (amd64/Rosetta)
   labops-guacd         172.20.0.80                Protocol daemon (amd64/Rosetta)
   labops-guac-postgres 172.20.0.82                Guacamole DB (arm64)
   labops-portainer     172.20.0.60  :9000         Container management
 ```
-Nginx routes: `/` dashboard, `/api/` n8n webhooks, `/guacamole/` RDP, `/health` healthcheck.
+Nginx routes: `/` dashboard, `/api/` LabOps API server, `/guacamole/` RDP, `/health` healthcheck.
 
 ## Critical Gotchas
 1. **Guacamole/guacd are amd64-only** -- run via Rosetta 2 on Apple Silicon. Tagged
    `platform: linux/amd64` in docker-compose.yml. Takes ~30s to start.
-2. **n8n workflows are auto-imported during make install via n8n CLI** -- JSON files in `n8n/workflows/` are
-   auto-imported during `make install`. The `n8n-data` volume preserves state across restarts.
-3. **Guacamole connections accumulate** -- every `connectRDP()` creates a new DB record.
+2. **Guacamole connections accumulate** -- every `connectRDP()` creates a new DB record.
    Clean with: `docker exec labops-guac-postgres psql -U guacamole -d guacamole_db -c "DELETE FROM guacamole_connection;"`
-4. **Proxmox uses self-signed certs** -- all HTTP requests use `allowUnauthorizedCerts: true`
+3. **Proxmox uses self-signed certs** -- all HTTP requests use `rejectUnauthorized: false`
    or `curl -k`. This is expected.
-5. **Static IPs** -- all container IPs are static in docker-compose.yml. Do not change
+4. **Static IPs** -- all container IPs are static in docker-compose.yml. Do not change
    without updating nginx proxy routes.
 
 ## Relationship to Other Repos
@@ -50,8 +48,9 @@ docker-compose.yml          All 6 service definitions, networks, volumes
 Makefile                    Operational interface: install, up, down, provision, health
 .env.example                Environment template
 nginx/html/index.html       Dashboard SPA (single HTML file, inline CSS/JS)
-nginx/conf/default.conf     Nginx proxy routes (Guacamole WebSocket, n8n API)
-n8n/workflows/              VM management + container health API workflows
+nginx/conf/default.conf     Nginx proxy routes (Guacamole WebSocket, API)
+api/server.js               LabOps API server (VM CRUD, health, config)
+api/Dockerfile              Dockerfile for labops-api container
 guacamole/init/01-initdb.sql Guacamole PostgreSQL schema
 proxmox/terraform/main.tf   VM provisioning (win11, win11-unmanaged, winserver)
 proxmox/ansible/setup-vm.yml VM config: disable firewall, enable RDP, create demo user

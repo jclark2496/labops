@@ -15,7 +15,7 @@ make install
 - **Lab Manager Dashboard** — Web UI to monitor containers, manage VMs, and connect via RDP
 - **Proxmox VM Provisioning** — Terraform + Ansible automation for Windows lab VMs
 - **Browser-Based RDP** — Apache Guacamole for in-browser remote desktop (no RDP client needed)
-- **Workflow Automation** — n8n webhooks powering the dashboard API
+- **Lightweight API Server** — Node.js server powering the dashboard API
 - **Container Management** — Portainer CE for Docker visibility
 
 ## Architecture
@@ -28,8 +28,8 @@ make install
 │  labops-nginx       172.20.0.50  :8080                       │
 │    Dashboard UI + reverse proxy                              │
 │                                                              │
-│  labops-n8n         172.20.0.30  :5678                       │
-│    Lab management API (VM CRUD, health checks)               │
+│  labops-api         172.20.0.30  :3000(int)                   │
+│    LabOps API server (VM CRUD, health checks)                │
 │                                                              │
 │  labops-guacamole   172.20.0.81  :8085  (amd64/Rosetta)     │
 │  labops-guacd       172.20.0.80         (amd64/Rosetta)      │
@@ -105,9 +105,6 @@ If Docker Desktop was just installed, you'll be prompted to open it first, then 
 Edit `.env` with your values:
 
 ```bash
-# Required
-N8N_PASSWORD=choose-a-password
-
 # Required for VM management
 PROXMOX_URL=https://<your-proxmox-ip>:8006
 PROXMOX_NODE=<your-node-name>
@@ -147,7 +144,6 @@ After the template exists, you only need `make provision` to create new lab VMs.
 | Service | URL | Purpose |
 |---|---|---|
 | **Dashboard** | `http://localhost:8080` | Lab Manager Control Center |
-| **n8n** | `http://localhost:5678` | Workflow Automation |
 | **Guacamole** | `http://localhost:8085/guacamole` | Browser-Based RDP |
 | **Portainer** | `http://localhost:9000` | Container Management |
 
@@ -214,33 +210,21 @@ The LabOps Control Center at `http://localhost:8080` provides:
 - **Connect RDP** — Opens a browser-based RDP session to any running VM via Guacamole. No RDP client needed.
 - **Provision New VM** — Select a template and spin up a new VM directly from the dashboard.
 - **Container Health** — Real-time status of all Docker services with color-coded indicators.
-- **Quick Links** — Direct links to Guacamole, Portainer, n8n, and Proxmox consoles.
+- **Quick Links** — Direct links to Guacamole, Portainer, and Proxmox consoles.
 
-## n8n First Login
+## API Server
 
-On first launch after `make install`, n8n requires a one-time owner account setup:
+LabOps uses a lightweight Node.js API server (`api/server.js`) as its backend. It starts automatically with `make install` -- no workflow imports or activation needed.
 
-1. Open n8n at `http://localhost:5678`
-2. Create an owner account:
-   - **Email:** any email (e.g., `admin@lab.local`)
-   - **Password:** `SEdemo2026` (recommended — matches other service defaults)
-   - **First/Last name:** anything
-3. Workflows are auto-imported and activated during `make install` — you should see them in the workflow list
-
-This is a one-time setup. After creating the account, n8n will go straight to the dashboard on future visits.
-
-## n8n Workflows
-
-LabOps uses n8n webhook endpoints as its API backend. Two workflows are auto-imported during `make install`:
-
-| Workflow | What it does |
+| Endpoint | What it does |
 |----------|-------------|
-| **VM Management** (`vm_management.json`) | Powers the Virtual Machines panel on the dashboard. Queries the Proxmox API to list VMs (IDs 200-299), and handles start/stop/destroy actions when you click the buttons. Endpoints: `/api/vms`, `/api/vms/:id/start`, `/api/vms/:id/stop`, `/api/vms/:id/destroy` |
-| **Container Health** (`container_health.json`) | Powers the Services panel on the dashboard. Queries the Docker socket to get real-time container status (healthy/unhealthy/down). Also provides the aggregate health endpoint. Endpoints: `/api/containers`, `/api/health` |
+| `/api/vms` | Powers the Virtual Machines panel. Queries the Proxmox API to list VMs (IDs 200-299). |
+| `/api/vms/:id/start`, `stop`, `destroy` | Start, stop, or destroy a VM via Proxmox. |
+| `/api/containers` | Powers the Services panel. Queries the Docker socket for real-time container status. |
+| `/api/health` | Aggregate health check endpoint. |
+| `/api/config` | Dashboard configuration (Guacamole credentials, Proxmox URL, port mappings) from `.env`. |
 
-> **Note:** Dashboard configuration (Guacamole credentials, Proxmox URL, port mappings) is served as a static JSON file at `/api/config`, generated from your `.env` during `make install`.
-
-If you need to re-import manually, open n8n and use **Workflows > Import from File** with the JSON files from `n8n/workflows/`.
+> **Note:** The LabOps API server replaces n8n for this repo. No workflow imports or activation needed. n8n is still used by the adversary-sim and mdr-demo-lab repos for AI scenario generation.
 
 ## Troubleshooting
 
@@ -259,8 +243,9 @@ On Apple Silicon Macs, Guacamole and guacd are amd64 images running via Rosetta 
 - Proxmox uses a self-signed cert — this is expected and handled
 
 ### Dashboard shows "Cannot reach Proxmox API"
-- The n8n workflows must be imported and activated
+- Verify the labops-api container is running (`make status`)
 - Check that `PROXMOX_*` variables are set in `.env`
+- The LabOps API server replaces n8n for this repo. No workflow imports or activation needed.
 
 ### VM provisioning fails
 - Verify `terraform.tfvars` exists in `proxmox/terraform/` (auto-generated from `.env` on `make install`)
@@ -287,15 +272,14 @@ labops/
 ├── Makefile                     # make install, up, down, provision, health
 ├── .env.example                 # Environment template (copy to .env)
 ├── .gitignore                   # Blocks .env, terraform secrets
-├── docker-compose.yml           # 6 services: nginx, n8n, guacamole stack, portainer
+├── docker-compose.yml           # Services: nginx, api, guacamole stack, portainer
+├── api/
+│   ├── server.js                # LabOps API server (VM CRUD, health, config)
+│   └── Dockerfile               # Dockerfile for labops-api container
 ├── nginx/
 │   ├── conf/default.conf        # Reverse proxy: /, /guacamole/, /api/
 │   └── html/
 │       └── index.html           # Lab Manager Dashboard (SPA)
-├── n8n/
-│   └── workflows/
-│       ├── vm_management.json   # VM CRUD API via Proxmox REST
-│       └── container_health.json # Container status + config API
 ├── guacamole/
 │   └── init/
 │       └── 01-initdb.sql        # Guacamole PostgreSQL schema

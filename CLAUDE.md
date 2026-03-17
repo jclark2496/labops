@@ -22,7 +22,7 @@ LabOps is a **standalone, product-agnostic automated lab manager** for Sales Eng
 ```
 Docker Host (labops-net: 172.20.0.0/24)
 ├── labops-nginx         172.20.0.50  :8080→80     Dashboard + reverse proxy
-├── labops-n8n           172.20.0.30  :5678         Lab management API
+├── labops-api           172.20.0.30  :3000(int)    LabOps API — lightweight Node.js server for VM management and health checks
 ├── labops-guacamole     172.20.0.81  :8085→8080    Browser RDP (amd64/Rosetta)
 ├── labops-guacd         172.20.0.80                Protocol daemon (amd64/Rosetta)
 ├── labops-guac-postgres 172.20.0.82                Guacamole DB (arm64)
@@ -38,7 +38,7 @@ Proxmox Server (user-configured IP)
 | Path | Backend | Purpose |
 |---|---|---|
 | `/` | static files | Dashboard (index.html) |
-| `/api/` | `172.20.0.30:5678/webhook/` | n8n webhook endpoints |
+| `/api/` | `172.20.0.30:3000/` | LabOps API endpoints |
 | `/guacamole/` | `172.20.0.81:8080/guacamole/` | Guacamole + WebSocket tunnel |
 | `/health` | nginx | Simple health check |
 
@@ -52,9 +52,9 @@ Proxmox Server (user-configured IP)
 | `Makefile` | Operational interface: install, up, down, provision, health |
 | `.env.example` | Environment template — all variables documented |
 | `nginx/html/index.html` | Dashboard SPA (single HTML file, inline CSS/JS) |
-| `nginx/conf/default.conf` | Nginx proxy routes (Guacamole WebSocket, n8n API) |
-| `n8n/workflows/vm_management.json` | VM CRUD API via Proxmox REST |
-| `n8n/workflows/container_health.json` | Container status + config API |
+| `nginx/conf/default.conf` | Nginx proxy routes (Guacamole WebSocket, API) |
+| `api/server.js` | LabOps API server — VM CRUD, container health, config |
+| `api/Dockerfile` | Dockerfile for the labops-api container |
 | `guacamole/init/01-initdb.sql` | Guacamole PostgreSQL schema (auto-runs on first start) |
 | `proxmox/create-template.sh` | Creates Windows 11 template VM via Proxmox REST API |
 | `proxmox/finalize-template.sh` | Finalizes template: Ansible config + Sysprep + convert to template |
@@ -67,9 +67,11 @@ Proxmox Server (user-configured IP)
 
 ---
 
-## 4. API Endpoints (n8n webhooks)
+## 4. API Endpoints (LabOps API server)
 
-All endpoints are proxied through nginx at `/api/`.
+All endpoints are served by the LabOps API server (`api/server.js`) and proxied through nginx at `/api/`.
+
+> **Note:** LabOps does NOT use n8n. The API is served by a lightweight Node.js server (api/server.js). n8n is used by the adversary-sim and mdr-demo-lab repos for AI scenario generation.
 
 | Endpoint | Method | What it does |
 |---|---|---|
@@ -81,8 +83,6 @@ All endpoints are proxied through nginx at `/api/`.
 | `/api/health` | GET | Aggregate health check |
 | `/api/config` | GET | Dashboard config from env vars (Guac creds, Proxmox URL) |
 
-**n8n requirement:** `NODE_FUNCTION_ALLOW_BUILTIN=fs,path,child_process` must be set in `docker-compose.yml` for Code nodes to run shell commands. This is already configured.
-
 ---
 
 ## 5. Guacamole RDP Connection Flow
@@ -93,7 +93,7 @@ The dashboard creates dynamic RDP connections via the Guacamole REST API. This p
 2. `POST /guacamole/api/session/data/postgresql/connections?token=...` with RDP parameters → get `connection.identifier`
 3. Build client URL: `btoa(connId + '\0c\0postgresql')` → open in new tab
 
-Guacamole credentials come from `/api/config` (which reads `.env` vars via n8n), not hardcoded in HTML.
+Guacamole credentials come from `/api/config` (which reads `.env` vars via the API server), not hardcoded in HTML.
 
 ---
 
@@ -102,9 +102,6 @@ Guacamole credentials come from `/api/config` (which reads `.env` vars via n8n),
 ### Guacamole and guacd are amd64-only
 Both run via Docker's Rosetta 2 on Apple Silicon. They're tagged `platform: linux/amd64` in docker-compose.yml. They work fine but take longer to start (~30s).
 
-### n8n workflows are auto-imported during install
-The `_import-workflows` Makefile target imports and activates workflows via the n8n REST API during `make install`. The `n8n-data` volume preserves state across restarts, so re-import is only needed after `make clean`.
-
 ### Guacamole connection records accumulate
 Every `connectRDP()` call creates a new connection in the PostgreSQL database. They accumulate over time. Clean manually:
 ```bash
@@ -112,7 +109,7 @@ docker exec labops-guac-postgres psql -U guacamole -d guacamole_db -c "DELETE FR
 ```
 
 ### Proxmox uses self-signed certs
-All HTTP requests to Proxmox use `allowUnauthorizedCerts: true` (n8n) or `-k` (curl). This is expected.
+All HTTP requests to Proxmox use `rejectUnauthorized: false` (API server) or `-k` (curl). This is expected.
 
 ### Docker Compose V2
 The Makefile uses `docker compose` (no hyphen — Compose V2 plugin). Both forms work with current Docker Desktop.
@@ -125,11 +122,10 @@ All from `.env` (gitignored). See `.env.example` for documentation.
 
 | Variable | Required | Used by |
 |---|---|---|
-| `N8N_PASSWORD` | Yes | n8n admin login |
-| `PROXMOX_URL` | For VM mgmt | n8n workflows, provision.sh |
-| `PROXMOX_NODE` | For VM mgmt | n8n workflows, provision.sh |
-| `PROXMOX_TOKEN_ID` | For VM mgmt | n8n workflows, Terraform |
-| `PROXMOX_TOKEN_SECRET` | For VM mgmt | n8n workflows, Terraform |
+| `PROXMOX_URL` | For VM mgmt | API server, provision.sh |
+| `PROXMOX_NODE` | For VM mgmt | API server, provision.sh |
+| `PROXMOX_TOKEN_ID` | For VM mgmt | API server, Terraform |
+| `PROXMOX_TOKEN_SECRET` | For VM mgmt | API server, Terraform |
 | `WIN11_ISO` | For template | create-template.sh |
 | `VIRTIO_ISO` | No (default: virtio-win.iso) | create-template.sh |
 | `TEMPLATE_VM_ID` | No (default: 100) | create-template.sh, finalize-template.sh |
@@ -183,4 +179,4 @@ Terraform state is stored locally in `proxmox/terraform/` (gitignored).
 
 ---
 
-*Last updated: 2026-03-16*
+*Last updated: 2026-03-17*
