@@ -19,3 +19,6 @@ proxmox/terraform/.terraform.lock.hcl
 
 # Node (n8n data)
 node_modules/
+
+# Generated dashboard config (built from .env by make install)
+nginx/html/config.json

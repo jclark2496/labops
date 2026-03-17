@@ -265,26 +265,25 @@ _wait-healthy:
 .PHONY: _import-workflows
 _import-workflows:
 	@echo "▶ Importing n8n workflows..."
-	@N8N_PW=$$(grep '^N8N_PASSWORD=' .env | cut -d'=' -f2-); \
-	for f in n8n/workflows/*.json; do \
-		curl -s -X POST "http://localhost:5678/api/v1/workflows" \
-			-H "Content-Type: application/json" \
-			-u "admin:$$N8N_PW" \
-			-d @"$$f" > /dev/null 2>&1 && \
+	@echo "  Waiting for n8n to be ready..."
+	@for i in $$(seq 1 12); do \
+		if docker exec labops-n8n ls /home/node/.n8n/database.sqlite > /dev/null 2>&1; then \
+			break; \
+		fi; \
+		sleep 5; \
+	done
+	@for f in n8n/workflows/*.json; do \
+		docker exec labops-n8n n8n import:workflow --input="/home/node/.n8n/workflows/$$(basename $$f)" > /dev/null 2>&1 && \
 			echo "  ✅ Imported $$(basename $$f)" || \
 			echo "  ⚠️  Failed to import $$(basename $$f)"; \
 	done
 	@echo "▶ Activating workflows..."
-	@N8N_PW=$$(grep '^N8N_PASSWORD=' .env | cut -d'=' -f2-); \
-	curl -s "http://localhost:5678/api/v1/workflows" -u "admin:$$N8N_PW" 2>/dev/null | \
-		python3 -c "import sys,json; [print(w['id']) for w in json.load(sys.stdin).get('data',[])]" 2>/dev/null | \
-		while read wid; do \
-			curl -s -X PATCH "http://localhost:5678/api/v1/workflows/$$wid" \
-				-H "Content-Type: application/json" \
-				-u "admin:$$N8N_PW" \
-				-d '{"active":true}' > /dev/null 2>&1; \
-		done; \
-	echo "✅ Workflows imported and activated"
+	@docker exec labops-n8n n8n list:workflow 2>/dev/null | while IFS='|' read wid wname; do \
+		docker exec labops-n8n n8n publish:workflow --id="$$wid" > /dev/null 2>&1; \
+	done
+	@echo "  Restarting n8n to activate workflows..."
+	@$(COMPOSE) restart n8n > /dev/null 2>&1
+	@echo "✅ Workflows imported and activated"
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 
