@@ -59,7 +59,27 @@ make install
 | **Proxmox VE** | No | Your hypervisor with Windows VM templates |
 | **Proxmox API Token** | No | Create in Datacenter → Permissions → API Tokens |
 
-`make install` automatically installs all tools marked "Yes" on both macOS and Linux — you don't need to install anything manually except Proxmox setup.
+`make install` automatically installs all tools marked "Yes" on macOS and Linux — you don't need to install anything manually except Proxmox setup.
+
+### Windows (WSL 2)
+
+On Windows, run everything inside WSL 2 (Windows Subsystem for Linux):
+
+**One-time setup (PowerShell as Administrator):**
+```powershell
+wsl --install        # Installs WSL 2 + Ubuntu (reboot when prompted)
+```
+
+Then install [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/) and enable **WSL 2 backend** + **Ubuntu integration** in Settings → Resources → WSL Integration.
+
+**Install (Ubuntu terminal):**
+```bash
+git clone https://github.com/jclark2496/labops.git
+cd labops
+./setup-wsl.sh       # Installs make/pip3, verifies Docker, runs make install
+```
+
+All `localhost` URLs (e.g., `http://localhost:8080`) work from your Windows browser.
 
 ## Quick Start
 

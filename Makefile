@@ -135,6 +135,18 @@ _install-deps:
 	@echo "║  LabOps — Installing Dependencies                       ║"
 	@echo "╚══════════════════════════════════════════════════════════╝"
 	@echo ""
+	@# ── WSL 2 filesystem warning ──
+	@if grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then \
+		if echo "$$PWD" | grep -q "^/mnt/[a-z]/"; then \
+			echo "⚠️  WARNING: Repo is on the Windows filesystem (slow I/O)."; \
+			echo "   For best performance, clone inside WSL 2: cd ~ && git clone ..."; \
+			echo ""; \
+		fi; \
+		if ! command -v pip3 >/dev/null 2>&1; then \
+			echo "▶ Installing pip3 (needed for Python packages)..."; \
+			sudo apt-get update -qq && sudo apt-get install -y python3-pip; \
+		fi; \
+	fi
 	@# ── Package manager (macOS only) ──
 	@if [ "$$(uname)" = "Darwin" ]; then \
 		if command -v brew >/dev/null 2>&1; then \
