@@ -695,13 +695,6 @@
                 <span class="link-sub">Containers</span>
               </div>
             </a>
-            <a class="link-card" id="link-n8n" href="http://localhost:5678" target="_blank">
-              <div class="link-icon">⚡</div>
-              <div class="link-label">
-                <span class="link-title">n8n</span>
-                <span class="link-sub">Workflows</span>
-              </div>
-            </a>
             <a class="link-card" id="link-proxmox" href="#" target="_blank" onclick="openProxmox(event)">
               <div class="link-icon">🔧</div>
               <div class="link-label">
@@ -990,7 +983,7 @@ async function connectRDP(ip, vmName) {
 // ── Container Health ──────────────────────────────────────────────────────────
 const EXPECTED_CONTAINERS = [
   { name: 'labops-nginx',         label: 'Nginx',     port: '8080' },
-  { name: 'labops-n8n',           label: 'n8n',       port: '5678' },
+  { name: 'labops-api',           label: 'API',       port: '—' },
   { name: 'labops-guacamole',     label: 'Guacamole', port: '8085' },
   { name: 'labops-guacd',         label: 'guacd',     port: '—' },
   { name: 'labops-guac-postgres', label: 'PostgreSQL', port: '—' },
