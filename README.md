@@ -212,18 +212,16 @@ This is a one-time setup. After creating the account, n8n will go straight to th
 
 ## n8n Workflows
 
-LabOps uses n8n webhook endpoints as its API backend. Two workflow files are provided:
+LabOps uses n8n webhook endpoints as its API backend. Two workflows are auto-imported during `make install`:
 
-| Workflow | File | Endpoints |
-|---|---|---|
-| VM Management | `n8n/workflows/vm_management.json` | `/api/vms`, `/api/vms/:id/start`, `/api/vms/:id/stop`, `/api/vms/:id/destroy` |
-| Container Health | `n8n/workflows/container_health.json` | `/api/containers`, `/api/health`, `/api/config` |
+| Workflow | What it does |
+|----------|-------------|
+| **VM Management** (`vm_management.json`) | Powers the Virtual Machines panel on the dashboard. Queries the Proxmox API to list VMs (IDs 200-299), and handles start/stop/destroy actions when you click the buttons. Endpoints: `/api/vms`, `/api/vms/:id/start`, `/api/vms/:id/stop`, `/api/vms/:id/destroy` |
+| **Container Health** (`container_health.json`) | Powers the Services panel on the dashboard. Queries the Docker socket to get real-time container status (healthy/unhealthy/down). Also provides the aggregate health endpoint. Endpoints: `/api/containers`, `/api/health` |
 
-Workflows are **automatically imported and activated** during `make install`. If you need to re-import manually:
-1. Open n8n at `http://localhost:5678`
-2. Go to Settings → Import from File
-3. Import both JSON files from `n8n/workflows/`
-4. Activate both workflows
+> **Note:** Dashboard configuration (Guacamole credentials, Proxmox URL, port mappings) is served as a static JSON file at `/api/config`, generated from your `.env` during `make install`.
+
+If you need to re-import manually, open n8n and use **Workflows > Import from File** with the JSON files from `n8n/workflows/`.
 
 ## Troubleshooting
 
