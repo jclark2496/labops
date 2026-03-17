@@ -197,6 +197,19 @@ The LabOps Control Center at `http://localhost:8080` provides:
 - **Container Health** — Real-time status of all Docker services with color-coded indicators.
 - **Quick Links** — Direct links to Guacamole, Portainer, n8n, and Proxmox consoles.
 
+## n8n First Login
+
+On first launch after `make install`, n8n requires a one-time owner account setup:
+
+1. Open n8n at `http://localhost:5678`
+2. Create an owner account:
+   - **Email:** any email (e.g., `admin@lab.local`)
+   - **Password:** `SEdemo2026` (recommended — matches other service defaults)
+   - **First/Last name:** anything
+3. Workflows are auto-imported and activated during `make install` — you should see them in the workflow list
+
+This is a one-time setup. After creating the account, n8n will go straight to the dashboard on future visits.
+
 ## n8n Workflows
 
 LabOps uses n8n webhook endpoints as its API backend. Two workflow files are provided:
