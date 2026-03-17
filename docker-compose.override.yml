@@ -1,0 +1,42 @@
+# Override for running alongside mdr-demo-lab monolith on same host
+# Remaps all IPs from 172.20.0.x to 172.21.0.x to avoid conflicts
+
+networks:
+  labops-net:
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+
+services:
+  nginx:
+    networks:
+      labops-net:
+        ipv4_address: 172.21.0.50
+    volumes:
+      - ./nginx/conf/default.override.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/html:/usr/share/nginx/html:ro
+
+  n8n:
+    networks:
+      labops-net:
+        ipv4_address: 172.21.0.30
+
+  guac-postgres:
+    networks:
+      labops-net:
+        ipv4_address: 172.21.0.82
+
+  guacd:
+    networks:
+      labops-net:
+        ipv4_address: 172.21.0.80
+
+  guacamole:
+    networks:
+      labops-net:
+        ipv4_address: 172.21.0.81
+
+  portainer:
+    networks:
+      labops-net:
+        ipv4_address: 172.21.0.60

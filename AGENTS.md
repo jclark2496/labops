@@ -29,8 +29,8 @@ Nginx routes: `/` dashboard, `/api/` n8n webhooks, `/guacamole/` RDP, `/health` 
 ## Critical Gotchas
 1. **Guacamole/guacd are amd64-only** -- run via Rosetta 2 on Apple Silicon. Tagged
    `platform: linux/amd64` in docker-compose.yml. Takes ~30s to start.
-2. **n8n workflows must be manually imported** -- JSON files in `n8n/workflows/` are imported
-   via n8n UI on first install. The `n8n-data` volume preserves state across restarts.
+2. **n8n workflows are auto-imported during make install via n8n CLI** -- JSON files in `n8n/workflows/` are
+   auto-imported during `make install`. The `n8n-data` volume preserves state across restarts.
 3. **Guacamole connections accumulate** -- every `connectRDP()` creates a new DB record.
    Clean with: `docker exec labops-guac-postgres psql -U guacamole -d guacamole_db -c "DELETE FROM guacamole_connection;"`
 4. **Proxmox uses self-signed certs** -- all HTTP requests use `allowUnauthorizedCerts: true`
