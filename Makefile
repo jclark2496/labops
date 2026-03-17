@@ -75,7 +75,28 @@ install: _install-deps _check-docker _env _generate-config _up _wait-healthy _im
 up:
 	@echo "▶ Starting LabOps stack..."
 	$(COMPOSE) up -d
-	@echo "✅ Stack started — run 'make status' to check health"
+	@echo "✅ Stack started"
+	@echo "▶ Checking n8n workflows..."
+	@for i in $$(seq 1 12); do \
+		if docker exec labops-n8n ls /home/node/.n8n/database.sqlite > /dev/null 2>&1; then \
+			break; \
+		fi; \
+		sleep 5; \
+	done
+	@WF_COUNT=$$(docker exec labops-n8n n8n list:workflow 2>/dev/null | wc -l | tr -d ' '); \
+	if [ "$$WF_COUNT" -lt 2 ] 2>/dev/null; then \
+		echo "▶ Importing n8n workflows..."; \
+		for f in n8n/workflows/*.json; do \
+			docker exec labops-n8n n8n import:workflow --input="/home/node/.n8n/workflows/$$(basename $$f)" > /dev/null 2>&1; \
+		done; \
+		docker exec labops-n8n n8n list:workflow 2>/dev/null | while IFS='|' read wid wname; do \
+			docker exec labops-n8n n8n publish:workflow --id="$$wid" > /dev/null 2>&1; \
+		done; \
+		$(COMPOSE) restart n8n > /dev/null 2>&1; \
+		echo "✅ Workflows imported and activated"; \
+	else \
+		echo "✅ Workflows already loaded ($$WF_COUNT found)"; \
+	fi
 
 .PHONY: down
 down:
