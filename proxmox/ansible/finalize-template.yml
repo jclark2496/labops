@@ -73,7 +73,7 @@
         state: present
 
     # ── 6. Install QEMU Guest Agent ──────────────────────────────────────
-    - name: Check if VirtIO ISO is mounted (D: or E:)
+    - name: "Check if VirtIO ISO is mounted (D: or E:)"
       win_shell: |
         $drives = @('D:', 'E:', 'F:')
         foreach ($d in $drives) {
