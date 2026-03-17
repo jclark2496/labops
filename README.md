@@ -52,15 +52,14 @@ make install
 
 | Requirement | Auto-installed? | Notes |
 |---|---|---|
-| **Homebrew** | Yes | Package manager for macOS |
-| **Docker Desktop** | Yes | You'll need to open it once after install |
+| **Docker** | Yes | Docker Desktop (macOS) or Docker Engine (Linux) |
 | **Terraform** | Yes | For VM provisioning |
 | **Ansible** | Yes | For VM configuration |
 | **Python packages** | Yes | pywinrm, requests |
 | **Proxmox VE** | No | Your hypervisor with Windows VM templates |
 | **Proxmox API Token** | No | Create in Datacenter → Permissions → API Tokens |
 
-`make install` automatically installs all tools marked "Yes" — you don't need to install anything manually except Proxmox setup.
+`make install` automatically installs all tools marked "Yes" on both macOS and Linux — you don't need to install anything manually except Proxmox setup.
 
 ## Quick Start
 
@@ -73,7 +72,7 @@ make install
 ```
 
 This will:
-1. Install Homebrew, Docker Desktop, Terraform, Ansible, and Python packages (if not present)
+1. Install Docker, Terraform, Ansible, and Python packages (if not present)
 2. Create `.env` and auto-generate passwords
 3. Start all 6 containers
 4. Wait for services to be healthy
@@ -232,7 +231,7 @@ make logs      # Check logs for errors
 ```
 
 ### Guacamole shows "connection refused"
-Guacamole and guacd are amd64 images running via Rosetta on Apple Silicon. They take longer to start (~30s). Wait and retry.
+On Apple Silicon Macs, Guacamole and guacd are amd64 images running via Rosetta emulation and take longer to start (~30s). On Linux x86-64, they run natively. Wait and retry.
 
 ### Can't reach Proxmox API
 - Verify `PROXMOX_URL` in `.env` points to your Proxmox server

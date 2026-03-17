@@ -135,34 +135,56 @@ _install-deps:
 	@echo "║  LabOps — Installing Dependencies                       ║"
 	@echo "╚══════════════════════════════════════════════════════════╝"
 	@echo ""
-	@# ── Homebrew ──
-	@if command -v brew >/dev/null 2>&1; then \
-		echo "✅ Homebrew is installed"; \
-	else \
-		echo "▶ Installing Homebrew..."; \
-		/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
-		echo "✅ Homebrew installed"; \
+	@# ── Package manager (macOS only) ──
+	@if [ "$$(uname)" = "Darwin" ]; then \
+		if command -v brew >/dev/null 2>&1; then \
+			echo "✅ Homebrew is installed"; \
+		else \
+			echo "▶ Installing Homebrew..."; \
+			/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
+			echo "✅ Homebrew installed"; \
+		fi; \
 	fi
-	@# ── Docker Desktop ──
+	@# ── Docker ──
 	@if command -v docker >/dev/null 2>&1; then \
 		echo "✅ Docker is installed"; \
 	else \
-		echo "▶ Installing Docker Desktop (this may take a few minutes)..."; \
-		brew install --cask docker; \
-		echo "✅ Docker Desktop installed"; \
-		echo ""; \
-		echo "⚠️  Docker Desktop needs to be started manually the first time."; \
-		echo "   Please open Docker Desktop from your Applications folder,"; \
-		echo "   wait for it to finish starting, then run 'make install' again."; \
-		echo ""; \
-		exit 1; \
+		if [ "$$(uname)" = "Darwin" ]; then \
+			echo "▶ Installing Docker Desktop..."; \
+			brew install --cask docker; \
+			echo "✅ Docker Desktop installed"; \
+			echo ""; \
+			echo "⚠️  Docker Desktop needs to be started manually the first time."; \
+			echo "   Please open Docker Desktop from your Applications folder,"; \
+			echo "   wait for it to finish starting, then run 'make install' again."; \
+			echo ""; \
+			exit 1; \
+		else \
+			echo "▶ Installing Docker Engine..."; \
+			curl -fsSL https://get.docker.com | sh; \
+			sudo systemctl start docker 2>/dev/null || sudo service docker start 2>/dev/null || true; \
+			sudo usermod -aG docker $$USER 2>/dev/null || true; \
+			echo "✅ Docker Engine installed"; \
+		fi; \
 	fi
 	@# ── Terraform ──
 	@if command -v terraform >/dev/null 2>&1; then \
 		echo "✅ Terraform is installed"; \
 	else \
 		echo "▶ Installing Terraform..."; \
-		brew install terraform; \
+		if [ "$$(uname)" = "Darwin" ]; then \
+			brew install terraform; \
+		elif command -v apt-get >/dev/null 2>&1; then \
+			curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg 2>/dev/null; \
+			echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $$(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list > /dev/null; \
+			sudo apt-get update -qq && sudo apt-get install -y terraform; \
+		elif command -v dnf >/dev/null 2>&1; then \
+			sudo dnf install -y dnf-plugins-core; \
+			sudo dnf config-manager --add-repo https://rpm.releases.hashicorp.com/fedora/hashicorp.repo; \
+			sudo dnf install -y terraform; \
+		else \
+			echo "⚠️  Could not install Terraform. Install manually: https://developer.hashicorp.com/terraform/install"; \
+		fi; \
 		echo "✅ Terraform installed"; \
 	fi
 	@# ── Ansible ──
@@ -170,7 +192,15 @@ _install-deps:
 		echo "✅ Ansible is installed"; \
 	else \
 		echo "▶ Installing Ansible..."; \
-		brew install ansible; \
+		if [ "$$(uname)" = "Darwin" ]; then \
+			brew install ansible; \
+		elif command -v apt-get >/dev/null 2>&1; then \
+			sudo apt-get update -qq && sudo apt-get install -y ansible; \
+		elif command -v dnf >/dev/null 2>&1; then \
+			sudo dnf install -y ansible; \
+		else \
+			pip3 install ansible 2>/dev/null || echo "⚠️  Could not install Ansible. Install manually."; \
+		fi; \
 		echo "✅ Ansible installed"; \
 	fi
 	@# ── Python packages ──
