@@ -23,7 +23,6 @@ networks:
         - subnet: ${LAB_NETWORK_SUBNET:-172.20.0.0/24}
 
 volumes:
-  n8n-data:
   portainer-data:
   guac-db:
 
@@ -49,36 +48,22 @@ services:
         ipv4_address: 172.20.0.50
 
   # ---------------------------------------------------------------------------
-  # n8n — Workflow Automation & Lab Management API
-  # Provides webhook endpoints for VM management and health checks
-  # UI: http://localhost:5678
+  # LabOps API — Lightweight Lab Management API
+  # Handles VM management, container health, and dashboard config.
+  # Replaces n8n for LabOps (n8n is still used by adversary-sim and mdr-demo-lab).
   # ---------------------------------------------------------------------------
-  n8n:
-    image: n8nio/n8n:latest
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
     platform: linux/arm64
-    container_name: labops-n8n
+    container_name: labops-api
     restart: unless-stopped
-    ports:
-      - "${N8N_PORT:-5678}:5678"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
-      - N8N_HOST=localhost
-      - N8N_PORT=5678
-      - N8N_PROTOCOL=http
-      - WEBHOOK_URL=http://localhost:5678
-      - N8N_SECURE_COOKIE=false
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:?Set N8N_PASSWORD in .env}
-      - GENERIC_TIMEZONE=${TIMEZONE:-America/Chicago}
-      - NODE_FUNCTION_ALLOW_BUILTIN=fs,path,child_process
-      # Proxmox API credentials — used by lab management workflows
       - PROXMOX_URL=${PROXMOX_URL:-}
       - PROXMOX_NODE=${PROXMOX_NODE:-}
       - PROXMOX_TOKEN_ID=${PROXMOX_TOKEN_ID:-}
       - PROXMOX_TOKEN_SECRET=${PROXMOX_TOKEN_SECRET:-}
-      # Dashboard config — served via /api/config for the front-end
       - GUAC_ADMIN_USER=${GUAC_ADMIN_USER:-guacadmin}
       - GUAC_ADMIN_PASSWORD=${GUAC_ADMIN_PASSWORD:-guacadmin}
       - LAB_VM_USER=${LAB_VM_USER:-demo}
@@ -86,12 +71,8 @@ services:
       - NGINX_PORT=${NGINX_PORT:-8080}
       - GUAC_PORT=${GUAC_PORT:-8085}
       - PORTAINER_PORT=${PORTAINER_PORT:-9000}
-      - N8N_EXT_PORT=${N8N_PORT:-5678}
     volumes:
-      - n8n-data:/home/node/.n8n
-      - ./n8n/workflows:/home/node/.n8n/workflows
       - /var/run/docker.sock:/var/run/docker.sock
-    user: root
     networks:
       labops-net:
         ipv4_address: 172.20.0.30
