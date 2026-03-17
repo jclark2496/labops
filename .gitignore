@@ -22,3 +22,4 @@ node_modules/
 
 # Generated dashboard config (built from .env by make install)
 nginx/html/config.json
+docker-compose.override.yml
