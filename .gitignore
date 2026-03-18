@@ -23,3 +23,10 @@ node_modules/
 # Generated dashboard config (built from .env by make install)
 nginx/html/config.json
 docker-compose.override.yml
+
+# Update system rollback state
+.update-rollback-hash
+.update-rollback-version.json
+
+# Superpowers brainstorm/workspace artifacts
+.superpowers/
