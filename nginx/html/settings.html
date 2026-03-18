@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Settings — Sophos Adversary Simulation Platform</title>
+  <title>Settings — LabOps</title>
   <link rel="stylesheet" href="shared.css">
   <style>
     html { scroll-behavior: smooth; }
@@ -404,8 +404,12 @@
 
   <!-- ── Header ──────────────────────────────────────────────── -->
   <header class="shared-header">
-    <span class="shared-brand">Sophos Adversary</span>
-    <span class="shared-tag">simulation_platform</span>
+    <div class="shared-wordmark">
+      <span class="wm-primary">SOPHOS</span>
+      <span class="wm-accent wm-accent-green">LAB_OPS</span>
+      <span class="wm-slash">//</span>
+      <span class="wm-page wm-page-green">settings</span>
+    </div>
   </header>
 
   <!-- ── Nav ─────────────────────────────────────────────────── -->
@@ -413,11 +417,12 @@
     <div class="nav-wrap" id="nav-wrap">
       <button class="nav-btn" id="nav-btn" onclick="navToggle()">&#x2630; Menu</button>
       <div class="nav-dd" id="nav-dd">
-        <button class="nav-it" onclick="navToggle();window.location.href='index.html'">SE Console</button>
-        <button class="nav-it" onclick="navToggle();labmgrClick()">Lab Manager</button>
-        <button class="nav-it" onclick="navToggle();window.open('/admin.html','_blank')">Scenario Studio</button>
-        <button class="nav-it" onclick="navToggle();window.open('/architecture.html','_blank')">Architecture</button>
+        <button class="nav-it" onclick="navToggle();window.open('http://' + location.hostname + ':8080','_blank')">SE Console</button>
+        <button class="nav-it" onclick="navToggle();window.location.href='index.html'">Lab Manager</button>
+        <button class="nav-it" onclick="navToggle();window.open('http://' + location.hostname + ':8080/admin.html','_blank')">Scenario Studio</button>
+        <button class="nav-it" onclick="navToggle();window.open('http://' + location.hostname + ':8080/architecture.html','_blank')">Architecture</button>
         <button class="nav-it" onclick="navToggle();window.open('https://central.sophos.com','_blank')">Sophos Central</button>
+        <button class="nav-it" onclick="navToggle()">Platform Settings</button>
       </div>
     </div>
   </div>
@@ -427,56 +432,53 @@
 
     <h1 class="page-title">&#x2699; Settings</h1>
 
-    <!-- ─── Section 1: AI Provider ─────────────────────────── -->
-    <div class="section">
-      <h2 class="section-hdr">AI Provider Configuration</h2>
-
-      <div class="stg-lbl">Provider</div>
-      <div class="stg-grid" id="stg-grid">
-        <div class="stg-card" data-provider="anthropic" onclick="stgSelect('anthropic')">
-          <div class="stg-cname">Anthropic</div>
-          <div class="stg-csub">Claude Sonnet</div>
-        </div>
-        <div class="stg-card" data-provider="openai" onclick="stgSelect('openai')">
-          <div class="stg-cname">OpenAI</div>
-          <div class="stg-csub">GPT-4o</div>
-        </div>
-        <div class="stg-card" data-provider="gemini" onclick="stgSelect('gemini')">
-          <div class="stg-cname">Google</div>
-          <div class="stg-csub">Gemini Pro</div>
-        </div>
-        <div class="stg-card" data-provider="ollama" onclick="stgSelect('ollama')">
-          <div class="stg-cname">Ollama</div>
-          <div class="stg-csub">Local &middot; Free</div>
+    <!-- ─── Adversary-Sim Detection Banner ──────────────────── -->
+    <div id="adv-redirect-banner" class="section" style="display:none;">
+      <div style="
+        border: 1px solid rgba(0,237,255,.25);
+        border-radius: 10px;
+        background: rgba(0,237,255,.05);
+        padding: 24px 28px;
+        display: flex;
+        align-items: flex-start;
+        gap: 18px;
+      ">
+        <div style="font-size:22px;flex-shrink:0;">🔗</div>
+        <div>
+          <div style="font-family:var(--ft);font-size:13px;font-weight:700;color:#00EDFF;letter-spacing:.05em;margin-bottom:8px;">SOPHOS ADVERSARY DETECTED</div>
+          <div style="font-size:14px;color:rgba(232,240,255,.8);line-height:1.6;margin-bottom:16px;">
+            Adversary Sim is running on this host. AI provider settings, API keys, and platform configuration are managed there.
+          </div>
+          <a id="adv-settings-link" href="#" style="
+            display: inline-block;
+            font-family: var(--fm);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: #00EDFF;
+            border: 1px solid rgba(0,237,255,.4);
+            border-radius: 5px;
+            padding: 8px 18px;
+            text-decoration: none;
+            background: rgba(0,237,255,.06);
+          ">Open Adversary Settings →</a>
         </div>
       </div>
-
-      <div id="stg-key-section" class="stg-key-section">
-        <div class="stg-lbl">API Key</div>
-        <div class="stg-key-row">
-          <input type="password" id="stg-key" class="stg-input" placeholder="Enter API key...">
-          <button class="stg-test" id="stg-test" onclick="stgTest()">TEST</button>
-        </div>
-      </div>
-
-      <div class="stg-lbl">Model override &mdash; leave blank for default</div>
-      <input type="text" id="stg-model" class="stg-input" placeholder="e.g. claude-3-5-sonnet-20241022">
-
-      <div class="stg-status" id="stg-status"></div>
     </div>
 
-    <!-- ─── Section 2: Lab Manager ─────────────────────────── -->
-    <div class="section">
-      <h2 class="section-hdr">Lab Manager</h2>
-
-      <div class="stg-lbl">LabOps URL</div>
-      <div class="stg-labops-row">
-        <input type="text" id="stg-labops-url" class="stg-input" placeholder="http://192.168.1.50:8080">
-        <button class="stg-test" id="stg-labops-test" onclick="stgLabopsTest()">TEST</button>
-      </div>
-      <div class="stg-labops-status" id="stg-labops-status">
-        <span class="dot dim"></span>
-        <span style="color:rgba(235,246,255,.65)">Not configured</span>
+    <!-- ─── Standalone Info Banner (shown when Adversary not detected) ── -->
+    <div id="adv-info-banner" class="section" style="display:none;">
+      <div style="
+        border: 1px solid rgba(232,240,255,.1);
+        border-radius: 10px;
+        background: rgba(232,240,255,.03);
+        padding: 20px 24px;
+        font-size: 13px;
+        color: rgba(232,240,255,.6);
+        line-height: 1.6;
+      ">
+        AI-powered scenario features require Adversary Sim. Install it to unlock scenario generation and enrichment.
       </div>
     </div>
 
@@ -536,78 +538,9 @@
     }
   });
 
-  async function labmgrClick() {
-    var url = localStorage.getItem('labopsUrl');
-    if (!url) {
-      try {
-        var cfg = await (await fetch('/api/settings')).json();
-        if (cfg.labopsUrl) { url = cfg.labopsUrl; localStorage.setItem('labopsUrl', url); }
-      } catch(e) {}
-    }
-    if (url) { window.open(url, '_blank'); }
-    else { alert('Lab Manager URL not configured. Set it in the Lab Manager section below.'); }
-  }
-
-  /* ── State ────────────────────────────────────────────────── */
-  var stgProv = '';
-
   /* ── Init ─────────────────────────────────────────────────── */
   async function initSettings() {
-    try {
-      const r = await fetch('/api/settings');
-      if (r.ok) {
-        const cfg = await r.json();
-        stgProv = cfg.provider || '';
-        document.getElementById('stg-key').value = cfg.apiKeyMasked || '';
-        document.getElementById('stg-model').value = cfg.model || '';
-        document.getElementById('stg-labops-url').value = cfg.labopsUrl || '';
-        stgLabopsUpdateIndicator(cfg.labopsUrl || '');
-      }
-    } catch(e) {}
-    stgUpdateCards();
-    document.getElementById('stg-status').className = 'stg-status';
     await checkUpdates();
-  }
-
-  /* ── Provider cards ───────────────────────────────────────── */
-  function stgSelect(p) {
-    stgProv = p;
-    stgUpdateCards();
-    document.getElementById('stg-key-section').style.display = p === 'ollama' ? 'none' : 'block';
-    document.getElementById('stg-status').className = 'stg-status';
-  }
-
-  function stgUpdateCards() {
-    document.querySelectorAll('.stg-card').forEach(function(c) {
-      c.classList.toggle('active', c.dataset.provider === stgProv);
-    });
-    document.getElementById('stg-key-section').style.display = stgProv === 'ollama' ? 'none' : 'block';
-  }
-
-  /* ── API key test ─────────────────────────────────────────── */
-  async function stgTest() {
-    var btn = document.getElementById('stg-test');
-    var status = document.getElementById('stg-status');
-    btn.textContent = 'TESTING...'; btn.disabled = true;
-    try {
-      var r = await fetch('/api/settings/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider: stgProv, apiKey: document.getElementById('stg-key').value })
-      });
-      if (r.ok) {
-        status.className = 'stg-status ok';
-        status.innerHTML = '&#x25CF; Connected &mdash; ' + stgProv;
-      } else {
-        var e = await r.text();
-        status.className = 'stg-status err';
-        status.innerHTML = '&#x25CF; Failed: ' + e;
-      }
-    } catch(e) {
-      status.className = 'stg-status err';
-      status.innerHTML = '&#x25CF; Error: ' + e.message;
-    }
-    btn.textContent = 'TEST'; btn.disabled = false;
   }
 
   /* ── Save ─────────────────────────────────────────────────── */
@@ -619,68 +552,18 @@
     saveStatus.className = 'save-status';
     saveStatus.textContent = '';
     try {
-      var labopsUrl = document.getElementById('stg-labops-url').value.trim().replace(/\/+$/, '');
-      var r = await fetch('/api/settings-save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider: stgProv,
-          apiKey: document.getElementById('stg-key').value,
-          model: document.getElementById('stg-model').value,
-          labopsUrl: labopsUrl
-        })
-      });
-      if (r.ok) {
-        localStorage.setItem('labopsUrl', labopsUrl);
-        saveStatus.className = 'save-status ok';
-        saveStatus.innerHTML = '&#x2713; Saved';
-        setTimeout(function() {
-          saveStatus.textContent = '';
-          saveStatus.className = 'save-status';
-        }, 3000);
-      } else {
-        var err = await r.text();
-        saveStatus.className = 'save-status err';
-        saveStatus.innerHTML = '&#x26A0; Save failed: ' + err;
-      }
+      saveStatus.className = 'save-status ok';
+      saveStatus.innerHTML = '&#x2713; Saved';
+      setTimeout(function() {
+        saveStatus.textContent = '';
+        saveStatus.className = 'save-status';
+      }, 3000);
     } catch(e) {
       saveStatus.className = 'save-status err';
       saveStatus.innerHTML = '&#x26A0; ' + e.message;
     }
     saveBtn.disabled = false;
     saveBtn.textContent = 'SAVE SETTINGS';
-  }
-
-  /* ── LabOps test ──────────────────────────────────────────── */
-  async function stgLabopsTest() {
-    var btn = document.getElementById('stg-labops-test');
-    var statusEl = document.getElementById('stg-labops-status');
-    var url = document.getElementById('stg-labops-url').value.trim().replace(/\/+$/, '');
-    if (!url) {
-      statusEl.innerHTML = '<span class="dot dim"></span><span style="color:rgba(235,246,255,.65)">Not configured</span>';
-      return;
-    }
-    btn.textContent = 'TESTING...'; btn.disabled = true;
-    try {
-      var r = await fetch(url + '/health', { mode: 'cors', signal: AbortSignal.timeout(8000) });
-      if (r.ok) {
-        statusEl.innerHTML = '<span class="dot green"></span><span style="color:#00FF41">Connected</span>';
-      } else {
-        statusEl.innerHTML = '<span class="dot red"></span><span style="color:#FF4444">Unreachable (HTTP ' + r.status + ')</span>';
-      }
-    } catch(e) {
-      statusEl.innerHTML = '<span class="dot red"></span><span style="color:#FF4444">Unreachable</span>';
-    }
-    btn.textContent = 'TEST'; btn.disabled = false;
-  }
-
-  function stgLabopsUpdateIndicator(url) {
-    var statusEl = document.getElementById('stg-labops-status');
-    if (!url) {
-      statusEl.innerHTML = '<span class="dot dim"></span><span style="color:rgba(235,246,255,.65)">Not configured</span>';
-      return;
-    }
-    statusEl.innerHTML = '<span class="dot dim"></span><span style="color:rgba(235,246,255,.65)">URL set &mdash; click Test to verify</span>';
   }
 
   /* ── Update section ───────────────────────────────────────── */
@@ -822,6 +705,24 @@
 
   /* ── Boot ─────────────────────────────────────────────────── */
   window.addEventListener('load', initSettings);
+</script>
+<script>
+(function detectAdversarySim() {
+  var url = 'http://' + location.hostname + ':8080/ai-config.json';
+  fetch(url, { mode: 'no-cors' })
+    .then(function() {
+      // Request succeeded or got opaque response — adversary-sim port is up
+      var link = document.getElementById('adv-settings-link');
+      if (link) link.href = 'http://' + location.hostname + ':8080/settings.html';
+      var banner = document.getElementById('adv-redirect-banner');
+      if (banner) banner.style.display = '';
+    })
+    .catch(function() {
+      // Fetch failed — adversary-sim not running, show standalone info
+      var banner = document.getElementById('adv-info-banner');
+      if (banner) banner.style.display = '';
+    });
+})();
 </script>
 </body>
 </html>
