@@ -62,141 +62,7 @@
     .section:nth-child(1) { animation-delay: 0.05s; }
     .section:nth-child(2) { animation-delay: 0.10s; }
     .section:nth-child(3) { animation-delay: 0.15s; }
-    .settings-footer       { animation: fadeUp 0.45s 0.20s ease forwards; opacity: 0; transform: translateY(12px); }
     @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
-
-    /* ── Settings form — copied & adapted from index.html ────── */
-    .stg-lbl {
-      font-size: 10px;
-      color: rgba(235,246,255,.72);
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      margin-top: 20px;
-      font-family: var(--ft);
-    }
-    .stg-lbl:first-child { margin-top: 0; }
-
-    .stg-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .stg-card {
-      background: #0d1225;
-      border: 1px solid rgba(0,237,255,.07);
-      border-radius: 6px;
-      padding: 14px 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .stg-card:hover { border-color: rgba(0,237,255,.38); }
-    .stg-card.active {
-      background: rgba(0,237,255,.08);
-      border-color: rgba(0,237,255,.4);
-    }
-
-    .stg-cname {
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--text-primary);
-      letter-spacing: 0.02em;
-    }
-    .stg-card.active .stg-cname { color: var(--accent-cyan); }
-    .stg-csub {
-      font-size: 10px;
-      color: rgba(235,246,255,.65);
-      margin-top: 3px;
-      font-family: var(--fm);
-    }
-
-    .stg-key-section { margin-top: 4px; }
-
-    .stg-key-row { display: flex; gap: 6px; }
-    .stg-labops-row { display: flex; gap: 6px; }
-
-    .stg-input {
-      flex: 1;
-      background: rgba(3,7,30,.7);
-      border: 1px solid rgba(0,237,255,.10);
-      border-radius: 5px;
-      padding: 9px 12px;
-      color: #EBF6FF;
-      font-family: var(--fm);
-      font-size: 12px;
-      width: 100%;
-      box-sizing: border-box;
-      transition: border-color .15s;
-    }
-    .stg-input:focus {
-      outline: none;
-      border-color: var(--accent-cyan);
-      box-shadow: 0 0 0 3px rgba(var(--accent-cyan-rgb),.07);
-    }
-    .stg-input::placeholder { color: rgba(235,246,255,.60); }
-
-    .stg-test {
-      font-family: var(--fm);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      padding: 9px 16px;
-      background: rgba(0,237,255,.08);
-      border: 1px solid rgba(0,237,255,.3);
-      border-radius: 5px;
-      color: var(--accent-cyan);
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all .15s;
-    }
-    .stg-test:hover { background: rgba(0,237,255,.14); border-color: rgba(0,237,255,.5); }
-    .stg-test:disabled { opacity: .5; cursor: default; }
-
-    .stg-status {
-      margin-top: 14px;
-      padding: 10px 14px;
-      border-radius: 5px;
-      font-size: 12px;
-      display: none;
-      font-family: var(--fm);
-    }
-    .stg-status.ok {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(0,255,65,.05);
-      border: 1px solid rgba(0,255,65,.2);
-      color: #00FF41;
-    }
-    .stg-status.err {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(255,68,68,.05);
-      border: 1px solid rgba(255,68,68,.28);
-      color: #FF4444;
-    }
-    .stg-status.info {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(0,237,255,.04);
-      border: 1px solid rgba(0,237,255,.18);
-      color: var(--text-sec);
-    }
-
-    .stg-divider { height: 1px; background: rgba(0,237,255,.07); margin: 20px 0 4px; }
-
-    .stg-labops-status {
-      margin-top: 10px;
-      font-size: 11px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--fm);
-    }
-    .stg-labops-status .dot {
-      display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-    }
-    .stg-labops-status .dot.green { background: #00FF41; box-shadow: 0 0 6px rgba(0,255,65,.4); }
-    .stg-labops-status .dot.dim   { background: rgba(235,246,255,.2); }
-    .stg-labops-status .dot.red   { background: #FF4444; box-shadow: 0 0 6px rgba(255,68,68,.4); }
 
     /* ── Update section ──────────────────────────────────────── */
     .upd-meta-grid {
@@ -355,45 +221,9 @@
       font-size: 11px;
     }
 
-    /* ── Settings footer ─────────────────────────────────────── */
-    .settings-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border-dim);
-    }
-
-    .settings-save-btn {
-      font-family: var(--fm);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      padding: 10px 24px;
-      background: rgba(0,237,255,.12);
-      border: 1px solid rgba(0,237,255,.38);
-      border-radius: 5px;
-      color: var(--accent-cyan);
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .settings-save-btn:hover { background: rgba(0,237,255,.2); box-shadow: 0 0 14px rgba(var(--accent-cyan-rgb),.18); }
-    .settings-save-btn:disabled { opacity: .45; cursor: default; }
-
-    .save-status {
-      font-family: var(--fm);
-      font-size: 11px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .save-status.ok  { color: #00FF41; }
-    .save-status.err { color: #FF4444; }
-
     /* ── Responsive ──────────────────────────────────────────── */
     @media (max-width: 600px) {
       .content { padding: 24px 16px 60px; }
-      .stg-grid { grid-template-columns: 1fr 1fr; }
       .upd-meta-grid { grid-template-columns: 1fr; gap: 4px; }
       .upd-meta-label { margin-top: 10px; }
     }
@@ -517,12 +347,6 @@
       <div id="upd-status" style="color:var(--text-dim)"></div>
     </div>
 
-    <!-- ─── Save button ──────────────────────────────────────── -->
-    <div class="settings-footer">
-      <span class="save-status" id="save-status"></span>
-      <button class="settings-save-btn" id="save-btn" onclick="stgSave()">SAVE SETTINGS</button>
-    </div>
-
   </div><!-- /.content -->
 </div><!-- /.page -->
 
@@ -541,29 +365,6 @@
   /* ── Init ─────────────────────────────────────────────────── */
   async function initSettings() {
     await checkUpdates();
-  }
-
-  /* ── Save ─────────────────────────────────────────────────── */
-  async function stgSave() {
-    var saveBtn = document.getElementById('save-btn');
-    var saveStatus = document.getElementById('save-status');
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'SAVING...';
-    saveStatus.className = 'save-status';
-    saveStatus.textContent = '';
-    try {
-      saveStatus.className = 'save-status ok';
-      saveStatus.innerHTML = '&#x2713; Saved';
-      setTimeout(function() {
-        saveStatus.textContent = '';
-        saveStatus.className = 'save-status';
-      }, 3000);
-    } catch(e) {
-      saveStatus.className = 'save-status err';
-      saveStatus.innerHTML = '&#x26A0; ' + e.message;
-    }
-    saveBtn.disabled = false;
-    saveBtn.textContent = 'SAVE SETTINGS';
   }
 
   /* ── Update section ───────────────────────────────────────── */
