@@ -4,78 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LabOps — Control Center</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
   <style>
-    /* ── Design Tokens ─────────────────────────────────────────────────────── */
-    :root {
-      --bg-deep:       #03071e;
-      --bg-surface:    #080f2e;
-      --bg-card:       #0a1540;
-      --bg-hdr:        #080f2e;
-      --bg-elevated:   #0a1540;
-      --bg-input:      #060c24;
-
-      --c-cyan:    #00EDFF;
-      --c-green:   #00FF41;
-      --c-success: #00F2B3;
-      --c-fail:    #FF4444;
-      --c-warn:    #FFB300;
-      --c-blue:    #3B82F6;
-      --c-purple:  #A78BFA;
-
-      --t-bright:  #e8f0ff;
-      --t-med:     rgba(235,246,255,.75);
-      --t-dim:     rgba(235,246,255,.45);
-      --t-ghost:   rgba(235,246,255,.18);
-
-      --b-dim:     rgba(0,237,255,.07);
-      --b-med:     rgba(0,237,255,.16);
-      --b-accent:  rgba(0,237,255,.38);
-      --b-fail:    rgba(255,68,68,.28);
-
-      --ft: 'Syne', sans-serif;
-      --fb: 'Syne', sans-serif;
-      --fm: 'JetBrains Mono', monospace;
-
-      --radius:    6px;
-      --hdr-h:     56px;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html, body {
-      height: 100%;
-      background: var(--bg-deep);
-      color: var(--t-bright);
-      font-family: var(--fb);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-    button { cursor: pointer; font-family: inherit; border: none; }
-    input, select { font-family: inherit; }
-
     body {
       display: flex;
       flex-direction: column;
     }
 
-    /* ── Scrollbar ──────────────────────────────────────────────────────────── */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--b-med); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--b-accent); }
-
-    /* ── Header ─────────────────────────────────────────────────────────────── */
-    .header {
-      flex-shrink: 0;
-      padding: 14px 18px 12px;
-      border-bottom: 1px solid var(--b-dim);
-      background: var(--bg-surface);
-      z-index: 100;
-    }
-
+    /* ── Header Layout ────────────────────────────────────────────────────────── */
     .header-left {
       display: flex;
       align-items: center;
@@ -84,58 +20,12 @@
 
     .logo-mark { display: none; }
 
-    .logo-text {
-      font-family: var(--fm);
-      font-weight: 700;
-      font-size: 15px;
-      letter-spacing: .02em;
-      color: var(--t-bright);
-      white-space: nowrap;
-    }
-
-    .logo-sub {
-      font-family: var(--fm);
-      font-size: 11px;
-      font-weight: 400;
-      letter-spacing: .03em;
-      color: var(--c-cyan);
-      background: rgba(0,237,255,.08);
-      border: 1px solid rgba(0,237,255,.22);
-      border-radius: 5px;
-      padding: 3px 10px 3px 22px;
-      position: relative;
-      white-space: nowrap;
-    }
-
-    .logo-sub::before {
-      content: '>';
-      position: absolute;
-      left: 8px;
-      color: rgba(0,237,255,.45);
-      font-size: 10px;
-    }
-
-    .header-right {
-      position: fixed;
-      top: 8px;
-      right: 16px;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(3,7,30,.85);
-      backdrop-filter: blur(8px);
-      padding: 4px 10px;
-      border-radius: 6px;
-      border: 1px solid rgba(0,237,255,.08);
-    }
-
     .health-badge {
       display: flex;
       align-items: center;
       gap: 7px;
       padding: 5px 14px;
-      border: 1px solid var(--b-dim);
+      border: 1px solid var(--border-dim);
       border-radius: var(--radius);
       font-family: var(--ft);
       font-size: 10px;
@@ -146,7 +36,7 @@
 
     .health-badge.healthy { border-color: rgba(0,255,65,.3); color: var(--c-green); }
     .health-badge.degraded { border-color: rgba(255,179,0,.3); color: var(--c-warn); }
-    .health-badge.down { border-color: var(--b-fail); color: var(--c-fail); }
+    .health-badge.down { border-color: rgba(255,68,68,.28); color: var(--c-fail); }
 
     .health-dot {
       width: 7px; height: 7px;
@@ -163,7 +53,7 @@
     .refresh-label {
       font-family: var(--fm);
       font-size: 11px;
-      color: var(--t-med);
+      color: var(--text-sec);
       letter-spacing: .04em;
     }
 
@@ -186,48 +76,6 @@
       .grid { grid-template-columns: 1fr; }
     }
 
-    /* ── Panels ─────────────────────────────────────────────────────────────── */
-    .panel {
-      background: var(--bg-card);
-      border: 1px solid var(--b-dim);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-
-    .panel-hdr {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 18px;
-      background: var(--bg-elevated);
-      border-bottom: 1px solid var(--b-dim);
-    }
-
-    .panel-title {
-      font-family: var(--ft);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .26em;
-      text-transform: uppercase;
-      color: var(--t-bright);
-    }
-
-    .panel-badge {
-      font-family: var(--fm);
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: .04em;
-      padding: 3px 10px;
-      border-radius: 4px;
-      background: rgba(0,237,255,.06);
-      border: 1px solid rgba(0,237,255,.15);
-      color: var(--t-med);
-    }
-
-    .panel-body {
-      padding: 16px 18px;
-    }
-
     /* ── VM Cards ───────────────────────────────────────────────────────────── */
     .vm-list {
       display: flex;
@@ -240,14 +88,14 @@
       grid-template-columns: 1fr auto;
       gap: 12px;
       padding: 14px 16px;
-      background: var(--bg-surface);
-      border: 1px solid var(--b-dim);
+      background: var(--bg-panel);
+      border: 1px solid var(--border-dim);
       border-radius: var(--radius);
       transition: border-color .15s;
     }
 
     .vm-card:hover {
-      border-color: var(--b-accent);
+      border-color: var(--border-acc);
     }
 
     .vm-info {
@@ -259,7 +107,7 @@
     .vm-name {
       font-weight: 500;
       font-size: 14px;
-      color: var(--t-bright);
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -279,7 +127,7 @@
     }
 
     .vm-status.running { background: rgba(0,255,65,.1); color: var(--c-green); }
-    .vm-status.stopped { background: rgba(235,246,255,.05); color: var(--t-dim); }
+    .vm-status.stopped { background: rgba(235,246,255,.05); color: var(--text-dim); }
     .vm-status.error { background: rgba(255,68,68,.1); color: var(--c-fail); }
 
     .vm-status-dot {
@@ -290,7 +138,7 @@
 
     .vm-meta {
       font-size: 12px;
-      color: var(--t-med);
+      color: var(--text-sec);
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
@@ -304,73 +152,25 @@
       gap: 6px;
     }
 
-    /* ── Buttons ─────────────────────────────────────────────────────────────── */
-    .btn {
-      font-family: var(--fb);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .08em;
-      padding: 6px 14px;
-      border-radius: 5px;
-      border: 1px solid var(--b-med);
-      background: transparent;
-      color: var(--t-bright);
-      cursor: pointer;
-      transition: all .15s;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .btn:hover {
-      background: rgba(0,237,255,.07);
-      border-color: var(--b-accent);
-      color: var(--c-cyan);
-    }
-
-    .btn:disabled {
-      opacity: .3;
-      cursor: not-allowed;
-    }
-
-    .btn-connect {
-      border-color: rgba(0,242,179,.3);
-      color: var(--c-success);
-    }
-
-    .btn-connect:hover {
-      background: rgba(0,242,179,.1);
-      border-color: var(--c-success);
-    }
-
-    .btn-danger {
-      border-color: var(--b-fail);
-      color: var(--c-fail);
-    }
-
-    .btn-danger:hover {
-      background: rgba(255,68,68,.1);
-      border-color: var(--c-fail);
-    }
-
+    /* ── Provision Form ─────────────────────────────────────────────────────── */
     .btn-primary {
       background: rgba(0,237,255,.1);
-      border-color: var(--b-accent);
-      color: var(--c-cyan);
+      border-color: var(--border-acc);
+      color: var(--accent-cyan);
     }
 
     .btn-primary:hover {
       background: rgba(0,237,255,.18);
-      border-color: var(--c-cyan);
+      border-color: var(--accent-cyan);
     }
 
-    /* ── Provision Form ─────────────────────────────────────────────────────── */
     .provision-form {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 14px 16px;
-      background: var(--bg-surface);
-      border: 1px dashed var(--b-med);
+      background: var(--bg-panel);
+      border: 1px dashed rgba(var(--accent-cyan-rgb),0.16);
       border-radius: var(--radius);
       margin-top: 10px;
     }
@@ -378,9 +178,9 @@
     .provision-form select {
       font-family: var(--fm);
       font-size: 11px;
-      background: var(--bg-input);
-      border: 1px solid var(--b-med);
-      color: var(--t-bright);
+      background: #060c24;
+      border: 1px solid rgba(var(--accent-cyan-rgb),0.16);
+      color: var(--text-primary);
       padding: 6px 10px;
       border-radius: 3px;
       flex: 1;
@@ -388,7 +188,7 @@
 
     .provision-form select:focus {
       outline: none;
-      border-color: var(--c-cyan);
+      border-color: var(--accent-cyan);
     }
 
     /* ── Container Status ───────────────────────────────────────────────────── */
@@ -414,7 +214,7 @@
     .svc-name {
       font-size: 13px;
       font-weight: 500;
-      color: var(--t-bright);
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -453,19 +253,19 @@
       align-items: center;
       gap: 10px;
       padding: 12px 14px;
-      background: var(--bg-surface);
-      border: 1px solid var(--b-dim);
+      background: var(--bg-panel);
+      border: 1px solid var(--border-dim);
       border-radius: var(--radius);
       text-decoration: none;
-      color: var(--t-med);
+      color: var(--text-sec);
       font-size: 11px;
       font-weight: 500;
       transition: all .15s;
     }
 
     .link-card:hover {
-      border-color: var(--b-accent);
-      color: var(--c-cyan);
+      border-color: var(--border-acc);
+      color: var(--accent-cyan);
       background: rgba(0,237,255,.03);
     }
 
@@ -476,7 +276,7 @@
       justify-content: center;
       border-radius: 4px;
       font-size: 14px;
-      background: var(--b-dim);
+      background: var(--border-dim);
       flex-shrink: 0;
     }
 
@@ -494,7 +294,7 @@
 
     .link-sub {
       font-size: 11px;
-      color: var(--t-med);
+      color: var(--text-sec);
       letter-spacing: .02em;
     }
 
@@ -512,8 +312,8 @@
       left: 50%;
       transform: translateX(-50%) translateY(80px);
       background: var(--bg-elevated);
-      border: 1px solid var(--b-accent);
-      color: var(--t-bright);
+      border: 1px solid var(--border-acc);
+      color: var(--text-primary);
       padding: 10px 20px;
       border-radius: var(--radius);
       font-size: 11px;
@@ -533,7 +333,7 @@
     .empty-state {
       text-align: center;
       padding: 32px 16px;
-      color: var(--t-dim);
+      color: var(--text-dim);
       font-size: 12px;
     }
 
@@ -545,7 +345,7 @@
 
     /* ── Loading Skeleton ───────────────────────────────────────────────────── */
     .skeleton {
-      background: linear-gradient(90deg, var(--bg-surface) 25%, var(--bg-elevated) 50%, var(--bg-surface) 75%);
+      background: linear-gradient(90deg, var(--bg-panel) 25%, var(--bg-elevated) 50%, var(--bg-panel) 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
       border-radius: 4px;
@@ -574,7 +374,7 @@
 
     .modal-box {
       background: var(--bg-card);
-      border: 1px solid var(--b-accent);
+      border: 1px solid var(--border-acc);
       border-radius: var(--radius);
       padding: 24px;
       max-width: 400px;
@@ -591,7 +391,7 @@
 
     .modal-body {
       font-size: 12px;
-      color: var(--t-med);
+      color: var(--text-sec);
       margin-bottom: 20px;
       line-height: 1.6;
     }
@@ -617,12 +417,12 @@
 <body>
 
 <!-- ── HEADER ──────────────────────────────────────────────────────────────── -->
-<header class="header">
+<header class="shared-header">
   <div class="header-left">
-    <span class="logo-text">LabOps</span>
-    <span class="logo-sub">control_center</span>
+    <span class="shared-brand">LabOps</span>
+    <span class="shared-tag">control_center</span>
   </div>
-  <div class="header-right">
+  <div class="shared-hdr-right">
     <span class="refresh-label" id="last-refresh">Updated just now</span>
     <div class="health-badge healthy" id="health-badge">
       <span class="health-dot"></span>
@@ -803,7 +603,7 @@ async function fetchVMs() {
       <div class="empty-state">
         <div class="empty-icon">⚠</div>
         <div>Cannot reach Proxmox API</div>
-        <div style="margin-top:6px;font-size:10px;color:var(--t-ghost)">
+        <div style="margin-top:6px;font-size:10px;color:rgba(232,240,255,0.18)">
           Check PROXMOX_URL in your .env file
         </div>
       </div>`;
@@ -824,7 +624,7 @@ function renderVMs(vms) {
       <div class="empty-state">
         <div class="empty-icon">☁</div>
         <div>No lab VMs provisioned</div>
-        <div style="margin-top:6px;font-size:10px;color:var(--t-ghost)">
+        <div style="margin-top:6px;font-size:10px;color:rgba(232,240,255,0.18)">
           Use the form below to provision your first VM
         </div>
       </div>`;
@@ -1036,7 +836,7 @@ function renderContainers(containers) {
         <span class="svc-name">
           <span class="svc-dot ${status}"></span>
           ${svc.label}
-          ${svc.port !== '—' ? `<span style="color:var(--t-ghost);font-size:10px">:${svc.port}</span>` : ''}
+          ${svc.port !== '—' ? `<span style="color:rgba(232,240,255,0.18);font-size:10px">:${svc.port}</span>` : ''}
         </span>
         <span class="svc-status ${status}">${statusLabel}</span>
       </div>`;
