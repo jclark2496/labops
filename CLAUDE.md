@@ -51,7 +51,8 @@ Proxmox Server (user-configured IP)
 | `docker-compose.yml` | All 6 service definitions, networks, volumes |
 | `Makefile` | Operational interface: install, up, down, provision, health |
 | `.env.example` | Environment template — all variables documented |
-| `nginx/html/index.html` | Dashboard SPA (single HTML file, inline CSS/JS) |
+| `nginx/html/index.html` | Dashboard SPA (imports shared.css for unified design system) |
+| `nginx/html/shared.css` | Shared design system (fonts, colors, components) imported by the dashboard |
 | `nginx/conf/default.conf` | Nginx proxy routes (Guacamole WebSocket, API) |
 | `api/server.js` | LabOps API server — VM CRUD, container health, config |
 | `api/Dockerfile` | Dockerfile for the labops-api container |
@@ -179,4 +180,4 @@ Terraform state is stored locally in `proxmox/terraform/` (gitignored).
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-18 — Added shared.css design system reference*
