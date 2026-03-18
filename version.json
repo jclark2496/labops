@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "date": "2026-03-18",
+  "repo": "labops",
+  "changelog": [
+    "Initial versioned release",
+    "Settings page with platform update system",
+    "Standardized navigation menu across all pages",
+    "Architecture page redesign with LabOps, AI layer, tabbed scenarios",
+    "Attack Console UI improvements"
+  ]
+}

@@ -365,3 +365,107 @@ input, select, textarea { font-family: inherit; }
 .ctrl::placeholder {
   color: rgba(var(--text-rgb),0.50);
 }
+
+select.ctrl {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='rgba(232,240,255,0.45)' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  cursor: pointer;
+}
+
+select.ctrl option {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* ── Nav Menu (shared across all pages) ──────────────────── */
+.nav-wrap { position: relative; flex-shrink: 0; }
+
+.nav-btn {
+  font-family: var(--fm);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-sec);
+  background: transparent;
+  border: 1px solid rgba(var(--accent-cyan-rgb), 0.18);
+  border-radius: 5px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.nav-btn:hover {
+  color: var(--text-primary);
+  border-color: rgba(var(--accent-cyan-rgb), 0.38);
+}
+
+.nav-dd {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 160px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius);
+  padding: 4px 0;
+  display: none;
+  z-index: 200;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: nav-in 0.12s ease-out;
+}
+
+@keyframes nav-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.nav-dd.open { display: block; }
+
+.nav-it {
+  display: block;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--text-sec);
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: var(--fb);
+}
+
+.nav-it:hover {
+  background: rgba(var(--accent-cyan-rgb), 0.06);
+  color: var(--text-primary);
+}
+
+.nav-sep {
+  height: 1px;
+  background: var(--border-dim);
+  margin: 3px 0;
+}
+
+/* ── Update Notification Dot ─────────────────────────────── */
+.nav-btn .update-dot {
+  display: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 4px rgba(0,242,179,0.5);
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.nav-btn .update-dot.visible { display: inline-block; }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}

@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — Sophos Adversary Simulation Platform</title>
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    html { scroll-behavior: smooth; }
+    body { overflow-y: auto; }
+
+    /* dot-grid bg */
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: radial-gradient(circle, rgba(var(--accent-cyan-rgb),0.065) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    /* ── Layout ──────────────────────────────────────────────── */
+    .page { position: relative; z-index: 1; }
+
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 28px 80px;
+    }
+
+    /* ── Page Title ──────────────────────────────────────────── */
+    .page-title {
+      font-family: var(--ft);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.04em;
+      margin: 0 0 40px;
+    }
+
+    /* ── Sections ────────────────────────────────────────────── */
+    .section { margin-bottom: 48px; }
+
+    .section-hdr {
+      font-family: var(--ft);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--text-label);
+      margin-bottom: 24px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    /* ── Fade-in ─────────────────────────────────────────────── */
+    .section {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 0.45s ease forwards;
+    }
+    .section:nth-child(1) { animation-delay: 0.05s; }
+    .section:nth-child(2) { animation-delay: 0.10s; }
+    .section:nth-child(3) { animation-delay: 0.15s; }
+    .settings-footer       { animation: fadeUp 0.45s 0.20s ease forwards; opacity: 0; transform: translateY(12px); }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* ── Settings form — copied & adapted from index.html ────── */
+    .stg-lbl {
+      font-size: 10px;
+      color: rgba(235,246,255,.40);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      margin-top: 20px;
+      font-family: var(--ft);
+    }
+    .stg-lbl:first-child { margin-top: 0; }
+
+    .stg-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stg-card {
+      background: #0d1225;
+      border: 1px solid rgba(0,237,255,.07);
+      border-radius: 6px;
+      padding: 14px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .stg-card:hover { border-color: rgba(0,237,255,.38); }
+    .stg-card.active {
+      background: rgba(0,237,255,.08);
+      border-color: rgba(0,237,255,.4);
+    }
+
+    .stg-cname {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
+    }
+    .stg-card.active .stg-cname { color: var(--accent-cyan); }
+    .stg-csub {
+      font-size: 10px;
+      color: rgba(235,246,255,.32);
+      margin-top: 3px;
+      font-family: var(--fm);
+    }
+
+    .stg-key-section { margin-top: 4px; }
+
+    .stg-key-row { display: flex; gap: 6px; }
+    .stg-labops-row { display: flex; gap: 6px; }
+
+    .stg-input {
+      flex: 1;
+      background: rgba(3,7,30,.7);
+      border: 1px solid rgba(0,237,255,.10);
+      border-radius: 5px;
+      padding: 9px 12px;
+      color: #EBF6FF;
+      font-family: var(--fm);
+      font-size: 12px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color .15s;
+    }
+    .stg-input:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 3px rgba(var(--accent-cyan-rgb),.07);
+    }
+    .stg-input::placeholder { color: rgba(235,246,255,.35); }
+
+    .stg-test {
+      font-family: var(--fm);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      padding: 9px 16px;
+      background: rgba(0,237,255,.08);
+      border: 1px solid rgba(0,237,255,.3);
+      border-radius: 5px;
+      color: var(--accent-cyan);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .stg-test:hover { background: rgba(0,237,255,.14); border-color: rgba(0,237,255,.5); }
+    .stg-test:disabled { opacity: .5; cursor: default; }
+
+    .stg-status {
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: 5px;
+      font-size: 12px;
+      display: none;
+      font-family: var(--fm);
+    }
+    .stg-status.ok {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(0,255,65,.05);
+      border: 1px solid rgba(0,255,65,.2);
+      color: #00FF41;
+    }
+    .stg-status.err {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,68,68,.05);
+      border: 1px solid rgba(255,68,68,.28);
+      color: #FF4444;
+    }
+    .stg-status.info {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(0,237,255,.04);
+      border: 1px solid rgba(0,237,255,.18);
+      color: var(--text-sec);
+    }
+
+    .stg-divider { height: 1px; background: rgba(0,237,255,.07); margin: 20px 0 4px; }
+
+    .stg-labops-status {
+      margin-top: 10px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--fm);
+    }
+    .stg-labops-status .dot {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+    .stg-labops-status .dot.green { background: #00FF41; box-shadow: 0 0 6px rgba(0,255,65,.4); }
+    .stg-labops-status .dot.dim   { background: rgba(235,246,255,.2); }
+    .stg-labops-status .dot.red   { background: #FF4444; box-shadow: 0 0 6px rgba(255,68,68,.4); }
+
+    /* ── Update section ──────────────────────────────────────── */
+    .upd-meta-grid {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 8px 20px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .upd-meta-label {
+      font-family: var(--ft);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .upd-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--fm);
+      font-size: 12px;
+      color: var(--text-sec);
+      background: rgba(var(--accent-cyan-rgb),.05);
+      border: 1px solid rgba(var(--accent-cyan-rgb),.12);
+      border-radius: 4px;
+      padding: 4px 10px;
+    }
+    .upd-badge.ok {
+      color: #00FF41;
+      background: rgba(0,255,65,.05);
+      border-color: rgba(0,255,65,.2);
+    }
+    .upd-badge.avail {
+      color: #FFB300;
+      background: rgba(255,179,0,.06);
+      border-color: rgba(255,179,0,.28);
+    }
+    .upd-badge.checking {
+      color: var(--text-dim);
+      border-color: rgba(var(--accent-cyan-rgb),.08);
+    }
+
+    .upd-changelog {
+      margin: 0 0 20px;
+      padding: 16px 18px;
+      background: rgba(3,7,30,.5);
+      border: 1px solid rgba(var(--accent-cyan-rgb),.08);
+      border-radius: 6px;
+    }
+    .upd-changelog-date {
+      font-family: var(--fm);
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      letter-spacing: .05em;
+    }
+    .upd-changelog ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .upd-changelog li {
+      font-family: var(--fm);
+      font-size: 12px;
+      color: var(--text-sec);
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(var(--accent-cyan-rgb),.05);
+      display: flex;
+      gap: 8px;
+    }
+    .upd-changelog li:last-child { border-bottom: none; }
+    .upd-changelog li::before {
+      content: '›';
+      color: rgba(var(--accent-cyan-rgb),.4);
+      flex-shrink: 0;
+    }
+
+    .upd-btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .upd-btn {
+      font-family: var(--fm);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      padding: 9px 18px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .upd-btn.check {
+      background: transparent;
+      border: 1px solid rgba(var(--accent-cyan-rgb),.25);
+      color: var(--text-sec);
+    }
+    .upd-btn.check:hover { border-color: rgba(var(--accent-cyan-rgb),.5); color: var(--text-primary); }
+    .upd-btn.apply {
+      background: rgba(255,179,0,.1);
+      border: 1px solid rgba(255,179,0,.4);
+      color: #FFB300;
+    }
+    .upd-btn.apply:hover { background: rgba(255,179,0,.18); }
+    .upd-btn.rollback {
+      background: transparent;
+      border: 1px solid rgba(255,68,68,.25);
+      color: rgba(255,68,68,.75);
+    }
+    .upd-btn.rollback:hover { border-color: rgba(255,68,68,.55); color: #FF4444; }
+    .upd-btn:disabled { opacity: .4; cursor: default; }
+
+    .upd-confirm-row {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .upd-confirm-row.visible { display: flex; }
+    .upd-confirm-text {
+      font-family: var(--fm);
+      font-size: 11px;
+      color: rgba(255,68,68,.8);
+    }
+    .upd-confirm-btn {
+      font-family: var(--fm);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      padding: 7px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .upd-confirm-btn.yes {
+      background: rgba(255,68,68,.1);
+      border: 1px solid rgba(255,68,68,.4);
+      color: #FF4444;
+    }
+    .upd-confirm-btn.yes:hover { background: rgba(255,68,68,.2); }
+    .upd-confirm-btn.no {
+      background: transparent;
+      border: 1px solid rgba(235,246,255,.15);
+      color: rgba(235,246,255,.45);
+    }
+    .upd-confirm-btn.no:hover { border-color: rgba(235,246,255,.3); color: var(--text-sec); }
+
+    #upd-status {
+      margin-top: 14px;
+      min-height: 14px;
+      font-family: var(--fm);
+      font-size: 11px;
+    }
+
+    /* ── Settings footer ─────────────────────────────────────── */
+    .settings-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-dim);
+    }
+
+    .settings-save-btn {
+      font-family: var(--fm);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      padding: 10px 24px;
+      background: rgba(0,237,255,.12);
+      border: 1px solid rgba(0,237,255,.38);
+      border-radius: 5px;
+      color: var(--accent-cyan);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .settings-save-btn:hover { background: rgba(0,237,255,.2); box-shadow: 0 0 14px rgba(var(--accent-cyan-rgb),.18); }
+    .settings-save-btn:disabled { opacity: .45; cursor: default; }
+
+    .save-status {
+      font-family: var(--fm);
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .save-status.ok  { color: #00FF41; }
+    .save-status.err { color: #FF4444; }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .content { padding: 24px 16px 60px; }
+      .stg-grid { grid-template-columns: 1fr 1fr; }
+      .upd-meta-grid { grid-template-columns: 1fr; gap: 4px; }
+      .upd-meta-label { margin-top: 10px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Header ──────────────────────────────────────────────── -->
+  <header class="shared-header">
+    <span class="shared-brand">Sophos Adversary</span>
+    <span class="shared-tag">simulation_platform</span>
+  </header>
+
+  <!-- ── Nav ─────────────────────────────────────────────────── -->
+  <div id="hdr-controls" style="position:fixed;top:10px;right:16px;z-index:100;display:flex;align-items:center;gap:8px;">
+    <div class="nav-wrap" id="nav-wrap">
+      <button class="nav-btn" id="nav-btn" onclick="navToggle()">&#x2630; Menu</button>
+      <div class="nav-dd" id="nav-dd">
+        <button class="nav-it" onclick="navToggle();window.location.href='index.html'">SE Console</button>
+        <button class="nav-it" onclick="navToggle();labmgrClick()">Lab Manager</button>
+        <button class="nav-it" onclick="navToggle();window.open('/admin.html','_blank')">Scenario Studio</button>
+        <button class="nav-it" onclick="navToggle();window.open('/architecture.html','_blank')">Architecture</button>
+        <button class="nav-it" onclick="navToggle();window.open('https://central.sophos.com','_blank')">Sophos Central</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Content ─────────────────────────────────────────────── -->
+  <div class="content">
+
+    <h1 class="page-title">&#x2699; Settings</h1>
+
+    <!-- ─── Section 1: AI Provider ─────────────────────────── -->
+    <div class="section">
+      <h2 class="section-hdr">AI Provider Configuration</h2>
+
+      <div class="stg-lbl">Provider</div>
+      <div class="stg-grid" id="stg-grid">
+        <div class="stg-card" data-provider="anthropic" onclick="stgSelect('anthropic')">
+          <div class="stg-cname">Anthropic</div>
+          <div class="stg-csub">Claude Sonnet</div>
+        </div>
+        <div class="stg-card" data-provider="openai" onclick="stgSelect('openai')">
+          <div class="stg-cname">OpenAI</div>
+          <div class="stg-csub">GPT-4o</div>
+        </div>
+        <div class="stg-card" data-provider="gemini" onclick="stgSelect('gemini')">
+          <div class="stg-cname">Google</div>
+          <div class="stg-csub">Gemini Pro</div>
+        </div>
+        <div class="stg-card" data-provider="ollama" onclick="stgSelect('ollama')">
+          <div class="stg-cname">Ollama</div>
+          <div class="stg-csub">Local &middot; Free</div>
+        </div>
+      </div>
+
+      <div id="stg-key-section" class="stg-key-section">
+        <div class="stg-lbl">API Key</div>
+        <div class="stg-key-row">
+          <input type="password" id="stg-key" class="stg-input" placeholder="Enter API key...">
+          <button class="stg-test" id="stg-test" onclick="stgTest()">TEST</button>
+        </div>
+      </div>
+
+      <div class="stg-lbl">Model override &mdash; leave blank for default</div>
+      <input type="text" id="stg-model" class="stg-input" placeholder="e.g. claude-3-5-sonnet-20241022">
+
+      <div class="stg-status" id="stg-status"></div>
+    </div>
+
+    <!-- ─── Section 2: Lab Manager ─────────────────────────── -->
+    <div class="section">
+      <h2 class="section-hdr">Lab Manager</h2>
+
+      <div class="stg-lbl">LabOps URL</div>
+      <div class="stg-labops-row">
+        <input type="text" id="stg-labops-url" class="stg-input" placeholder="http://192.168.1.50:8080">
+        <button class="stg-test" id="stg-labops-test" onclick="stgLabopsTest()">TEST</button>
+      </div>
+      <div class="stg-labops-status" id="stg-labops-status">
+        <span class="dot dim"></span>
+        <span style="color:rgba(235,246,255,.32)">Not configured</span>
+      </div>
+    </div>
+
+    <!-- ─── Section 3: Platform Update ─────────────────────── -->
+    <div class="section">
+      <h2 class="section-hdr">Platform Update</h2>
+
+      <div class="upd-meta-grid">
+        <span class="upd-meta-label">Current Version</span>
+        <span class="upd-badge" id="upd-local-ver">—</span>
+
+        <span class="upd-meta-label">Latest Version</span>
+        <span class="upd-badge" id="upd-remote-ver">—</span>
+
+        <span class="upd-meta-label">Status</span>
+        <span class="upd-badge checking" id="upd-badge-status">Checking...</span>
+      </div>
+
+      <div class="upd-changelog" id="upd-changelog" style="display:none">
+        <div class="upd-changelog-date" id="upd-changelog-date"></div>
+        <ul id="upd-changelog-list"></ul>
+      </div>
+
+      <div class="upd-btn-row" id="upd-btn-row">
+        <button class="upd-btn check" onclick="checkUpdates()">&#x21BA; Check for Updates</button>
+        <button class="upd-btn apply" id="upd-apply-btn" onclick="applyUpdate()" style="display:none">&#x2191; Update Now</button>
+        <button class="upd-btn rollback" id="upd-rollback-btn" onclick="showRollbackConfirm()" style="display:none">&#x21A9; Rollback</button>
+      </div>
+
+      <div class="upd-confirm-row" id="upd-confirm-row">
+        <span class="upd-confirm-text">Are you sure? This will revert to the previous version.</span>
+        <button class="upd-confirm-btn yes" onclick="doRollback()">Confirm Rollback</button>
+        <button class="upd-confirm-btn no" onclick="hideRollbackConfirm()">Cancel</button>
+      </div>
+
+      <div id="upd-status" style="color:var(--text-dim)"></div>
+    </div>
+
+    <!-- ─── Save button ──────────────────────────────────────── -->
+    <div class="settings-footer">
+      <span class="save-status" id="save-status"></span>
+      <button class="settings-save-btn" id="save-btn" onclick="stgSave()">SAVE SETTINGS</button>
+    </div>
+
+  </div><!-- /.content -->
+</div><!-- /.page -->
+
+<script>
+  /* ── Nav ──────────────────────────────────────────────────── */
+  function navToggle() {
+    document.getElementById('nav-dd').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    var wrap = document.getElementById('nav-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('nav-dd').classList.remove('open');
+    }
+  });
+
+  async function labmgrClick() {
+    var url = localStorage.getItem('labopsUrl');
+    if (!url) {
+      try {
+        var cfg = await (await fetch('/api/settings')).json();
+        if (cfg.labopsUrl) { url = cfg.labopsUrl; localStorage.setItem('labopsUrl', url); }
+      } catch(e) {}
+    }
+    if (url) { window.open(url, '_blank'); }
+    else { alert('Lab Manager URL not configured. Set it in the Lab Manager section below.'); }
+  }
+
+  /* ── State ────────────────────────────────────────────────── */
+  var stgProv = '';
+
+  /* ── Init ─────────────────────────────────────────────────── */
+  async function initSettings() {
+    try {
+      const r = await fetch('/api/settings');
+      if (r.ok) {
+        const cfg = await r.json();
+        stgProv = cfg.provider || '';
+        document.getElementById('stg-key').value = cfg.apiKeyMasked || '';
+        document.getElementById('stg-model').value = cfg.model || '';
+        document.getElementById('stg-labops-url').value = cfg.labopsUrl || '';
+        stgLabopsUpdateIndicator(cfg.labopsUrl || '');
+      }
+    } catch(e) {}
+    stgUpdateCards();
+    document.getElementById('stg-status').className = 'stg-status';
+    await checkUpdates();
+  }
+
+  /* ── Provider cards ───────────────────────────────────────── */
+  function stgSelect(p) {
+    stgProv = p;
+    stgUpdateCards();
+    document.getElementById('stg-key-section').style.display = p === 'ollama' ? 'none' : 'block';
+    document.getElementById('stg-status').className = 'stg-status';
+  }
+
+  function stgUpdateCards() {
+    document.querySelectorAll('.stg-card').forEach(function(c) {
+      c.classList.toggle('active', c.dataset.provider === stgProv);
+    });
+    document.getElementById('stg-key-section').style.display = stgProv === 'ollama' ? 'none' : 'block';
+  }
+
+  /* ── API key test ─────────────────────────────────────────── */
+  async function stgTest() {
+    var btn = document.getElementById('stg-test');
+    var status = document.getElementById('stg-status');
+    btn.textContent = 'TESTING...'; btn.disabled = true;
+    try {
+      var r = await fetch('/api/settings/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: stgProv, apiKey: document.getElementById('stg-key').value })
+      });
+      if (r.ok) {
+        status.className = 'stg-status ok';
+        status.innerHTML = '&#x25CF; Connected &mdash; ' + stgProv;
+      } else {
+        var e = await r.text();
+        status.className = 'stg-status err';
+        status.innerHTML = '&#x25CF; Failed: ' + e;
+      }
+    } catch(e) {
+      status.className = 'stg-status err';
+      status.innerHTML = '&#x25CF; Error: ' + e.message;
+    }
+    btn.textContent = 'TEST'; btn.disabled = false;
+  }
+
+  /* ── Save ─────────────────────────────────────────────────── */
+  async function stgSave() {
+    var saveBtn = document.getElementById('save-btn');
+    var saveStatus = document.getElementById('save-status');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'SAVING...';
+    saveStatus.className = 'save-status';
+    saveStatus.textContent = '';
+    try {
+      var labopsUrl = document.getElementById('stg-labops-url').value.trim().replace(/\/+$/, '');
+      var r = await fetch('/api/settings-save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: stgProv,
+          apiKey: document.getElementById('stg-key').value,
+          model: document.getElementById('stg-model').value,
+          labopsUrl: labopsUrl
+        })
+      });
+      if (r.ok) {
+        localStorage.setItem('labopsUrl', labopsUrl);
+        saveStatus.className = 'save-status ok';
+        saveStatus.innerHTML = '&#x2713; Saved';
+        setTimeout(function() {
+          saveStatus.textContent = '';
+          saveStatus.className = 'save-status';
+        }, 3000);
+      } else {
+        var err = await r.text();
+        saveStatus.className = 'save-status err';
+        saveStatus.innerHTML = '&#x26A0; Save failed: ' + err;
+      }
+    } catch(e) {
+      saveStatus.className = 'save-status err';
+      saveStatus.innerHTML = '&#x26A0; ' + e.message;
+    }
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'SAVE SETTINGS';
+  }
+
+  /* ── LabOps test ──────────────────────────────────────────── */
+  async function stgLabopsTest() {
+    var btn = document.getElementById('stg-labops-test');
+    var statusEl = document.getElementById('stg-labops-status');
+    var url = document.getElementById('stg-labops-url').value.trim().replace(/\/+$/, '');
+    if (!url) {
+      statusEl.innerHTML = '<span class="dot dim"></span><span style="color:rgba(235,246,255,.32)">Not configured</span>';
+      return;
+    }
+    btn.textContent = 'TESTING...'; btn.disabled = true;
+    try {
+      var r = await fetch(url + '/health', { mode: 'cors', signal: AbortSignal.timeout(8000) });
+      if (r.ok) {
+        statusEl.innerHTML = '<span class="dot green"></span><span style="color:#00FF41">Connected</span>';
+      } else {
+        statusEl.innerHTML = '<span class="dot red"></span><span style="color:#FF4444">Unreachable (HTTP ' + r.status + ')</span>';
+      }
+    } catch(e) {
+      statusEl.innerHTML = '<span class="dot red"></span><span style="color:#FF4444">Unreachable</span>';
+    }
+    btn.textContent = 'TEST'; btn.disabled = false;
+  }
+
+  function stgLabopsUpdateIndicator(url) {
+    var statusEl = document.getElementById('stg-labops-status');
+    if (!url) {
+      statusEl.innerHTML = '<span class="dot dim"></span><span style="color:rgba(235,246,255,.32)">Not configured</span>';
+      return;
+    }
+    statusEl.innerHTML = '<span class="dot dim"></span><span style="color:rgba(235,246,255,.32)">URL set &mdash; click Test to verify</span>';
+  }
+
+  /* ── Update section ───────────────────────────────────────── */
+  async function checkUpdates() {
+    var statusEl = document.getElementById('upd-status');
+    var badge = document.getElementById('upd-badge-status');
+    badge.className = 'upd-badge checking';
+    badge.textContent = 'Checking...';
+    statusEl.style.color = 'var(--text-dim)';
+    statusEl.textContent = '';
+    document.getElementById('upd-apply-btn').style.display = 'none';
+    document.getElementById('upd-rollback-btn').style.display = 'none';
+    document.getElementById('upd-changelog').style.display = 'none';
+    hideRollbackConfirm();
+    try {
+      var r = await fetch('/api/update-check');
+      if (r.ok) {
+        var d = await r.json();
+        renderUpdateState(d);
+      } else {
+        badge.className = 'upd-badge';
+        badge.textContent = 'Check failed';
+        statusEl.style.color = '#FF4444';
+        statusEl.textContent = 'Update check returned HTTP ' + r.status;
+      }
+    } catch(e) {
+      badge.className = 'upd-badge';
+      badge.textContent = 'Unavailable';
+      statusEl.style.color = 'var(--text-dim)';
+      statusEl.textContent = 'Could not reach update API: ' + e.message;
+    }
+  }
+
+  function renderUpdateState(d) {
+    var localEl  = document.getElementById('upd-local-ver');
+    var remoteEl = document.getElementById('upd-remote-ver');
+    var badge    = document.getElementById('upd-badge-status');
+    var changelogWrap = document.getElementById('upd-changelog');
+    var changelogDate = document.getElementById('upd-changelog-date');
+    var changelogList = document.getElementById('upd-changelog-list');
+    var applyBtn    = document.getElementById('upd-apply-btn');
+    var rollbackBtn = document.getElementById('upd-rollback-btn');
+    var statusEl    = document.getElementById('upd-status');
+
+    localEl.textContent  = d.localVersion  || '—';
+    remoteEl.textContent = d.remoteVersion || '—';
+    statusEl.textContent = '';
+
+    if (d.updateAvailable) {
+      badge.className = 'upd-badge avail';
+      badge.innerHTML = '&#x2191; Update Available';
+      applyBtn.style.display = '';
+
+      // Render changelog
+      if (d.changelog && d.changelog.length) {
+        changelogDate.textContent = d.remoteDate ? 'Released: ' + d.remoteDate : '';
+        changelogList.innerHTML = '';
+        d.changelog.forEach(function(item) {
+          var li = document.createElement('li');
+          li.textContent = item;
+          changelogList.appendChild(li);
+        });
+        changelogWrap.style.display = '';
+      }
+    } else {
+      badge.className = 'upd-badge ok';
+      badge.innerHTML = '&#x2713; Up to date';
+      changelogWrap.style.display = 'none';
+    }
+
+    if (d.rollbackAvailable) {
+      rollbackBtn.style.display = '';
+    }
+  }
+
+  async function applyUpdate() {
+    var btn = document.getElementById('upd-apply-btn');
+    var statusEl = document.getElementById('upd-status');
+    btn.disabled = true;
+    btn.textContent = 'Updating...';
+    statusEl.style.color = 'var(--text-dim)';
+    statusEl.textContent = 'Applying update, please wait...';
+    try {
+      var r = await fetch('/api/update-apply', { method: 'POST' });
+      var data = await r.json();
+      if (r.ok && data.status === 'ok') {
+        statusEl.style.color = '#00FF41';
+        statusEl.textContent = '\u2713 ' + (data.message || 'Update applied. Refresh the page.');
+        // Re-check versions after update
+        setTimeout(checkUpdates, 1500);
+      } else {
+        statusEl.style.color = '#FF4444';
+        statusEl.textContent = '\u26a0 ' + (data.message || 'Update failed.');
+        btn.disabled = false;
+        btn.textContent = '\u2191 Update Now';
+      }
+    } catch(e) {
+      statusEl.style.color = '#FF4444';
+      statusEl.textContent = '\u26a0 Error: ' + e.message;
+      btn.disabled = false;
+      btn.textContent = '\u2191 Update Now';
+    }
+  }
+
+  function showRollbackConfirm() {
+    document.getElementById('upd-confirm-row').classList.add('visible');
+    document.getElementById('upd-rollback-btn').style.display = 'none';
+  }
+
+  function hideRollbackConfirm() {
+    document.getElementById('upd-confirm-row').classList.remove('visible');
+    // Only restore button if rollback was available (re-check on next render)
+  }
+
+  async function doRollback() {
+    var statusEl = document.getElementById('upd-status');
+    var confirmRow = document.getElementById('upd-confirm-row');
+    confirmRow.classList.remove('visible');
+    statusEl.style.color = 'var(--text-dim)';
+    statusEl.textContent = 'Rolling back...';
+    try {
+      var r = await fetch('/api/update-rollback', { method: 'POST' });
+      var data = await r.json();
+      if (r.ok && data.status === 'ok') {
+        statusEl.style.color = '#00FF41';
+        statusEl.textContent = '\u2713 ' + (data.message || 'Rollback complete. Refresh the page.');
+        setTimeout(checkUpdates, 1500);
+      } else {
+        statusEl.style.color = '#FF4444';
+        statusEl.textContent = '\u26a0 ' + (data.message || 'Rollback failed.');
+        document.getElementById('upd-rollback-btn').style.display = '';
+      }
+    } catch(e) {
+      statusEl.style.color = '#FF4444';
+      statusEl.textContent = '\u26a0 Error: ' + e.message;
+      document.getElementById('upd-rollback-btn').style.display = '';
+    }
+  }
+
+  /* ── Boot ─────────────────────────────────────────────────── */
+  window.addEventListener('load', initSettings);
+</script>
+</body>
+</html>
