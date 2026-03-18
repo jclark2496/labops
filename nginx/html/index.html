@@ -26,9 +26,9 @@
       --c-purple:  #A78BFA;
 
       --t-bright:  #EBF6FF;
-      --t-med:     rgba(235,246,255,.65);
-      --t-dim:     rgba(235,246,255,.32);
-      --t-ghost:   rgba(235,246,255,.15);
+      --t-med:     rgba(235,246,255,.75);
+      --t-dim:     rgba(235,246,255,.45);
+      --t-ghost:   rgba(235,246,255,.18);
 
       --b-dim:     rgba(0,237,255,.07);
       --b-med:     rgba(0,237,255,.16);
@@ -67,9 +67,8 @@
     /* ── Header ─────────────────────────────────────────────────────────────── */
     .header {
       height: var(--hdr-h);
-      background: var(--bg-hdr);
-      background-image: linear-gradient(90deg, #001240, #002166 50%, #001240);
-      border-bottom: 1px solid var(--b-accent);
+      background: var(--bg-surface);
+      border-bottom: 1px solid rgba(0,237,255,.1);
       display: flex;
       align-items: center;
       padding: 0 24px;
@@ -99,21 +98,24 @@
     }
 
     .logo-text {
-      font-family: var(--font-head);
+      font-family: var(--font-mono);
       font-weight: 700;
       font-size: 15px;
-      letter-spacing: .12em;
+      letter-spacing: .02em;
       color: var(--t-bright);
     }
 
     .logo-sub {
       font-family: var(--font-mono);
-      font-size: 9px;
-      font-weight: 500;
-      letter-spacing: .15em;
-      color: var(--t-dim);
-      text-transform: uppercase;
-      margin-left: 4px;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: .03em;
+      color: var(--c-cyan);
+      background: rgba(0,237,255,.08);
+      border: 1px solid rgba(0,237,255,.22);
+      border-radius: 5px;
+      padding: 3px 10px;
+      margin-left: 6px;
     }
 
     .hdr-sep {
@@ -134,12 +136,13 @@
       display: flex;
       align-items: center;
       gap: 7px;
-      padding: 5px 12px;
+      padding: 5px 14px;
       border: 1px solid var(--b-dim);
       border-radius: var(--radius);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .08em;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .06em;
       text-transform: uppercase;
     }
 
@@ -160,8 +163,8 @@
     }
 
     .refresh-label {
-      font-size: 9px;
-      color: var(--t-dim);
+      font-size: 10px;
+      color: var(--t-med);
       letter-spacing: .06em;
     }
 
@@ -202,10 +205,10 @@
     }
 
     .panel-title {
-      font-family: var(--font-head);
+      font-family: var(--font-mono);
       font-size: 13px;
       font-weight: 700;
-      letter-spacing: .1em;
+      letter-spacing: .14em;
       text-transform: uppercase;
       color: var(--t-bright);
     }
@@ -253,8 +256,9 @@
     }
 
     .vm-name {
-      font-weight: 700;
-      font-size: 13px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 13.5px;
       color: var(--t-bright);
       display: flex;
       align-items: center;
@@ -284,8 +288,9 @@
     }
 
     .vm-meta {
-      font-size: 11px;
-      color: var(--t-dim);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--t-med);
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
@@ -407,9 +412,10 @@
     }
 
     .svc-name {
-      font-size: 12px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
       font-weight: 500;
-      color: var(--t-med);
+      color: var(--t-bright);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -425,7 +431,8 @@
     .svc-dot.unhealthy { background: var(--c-fail); box-shadow: 0 0 6px rgba(255,68,68,.4); }
 
     .svc-status {
-      font-size: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
       font-weight: 600;
       letter-spacing: .06em;
       text-transform: uppercase;
@@ -481,15 +488,16 @@
     }
 
     .link-title {
-      font-weight: 700;
-      font-size: 11px;
-      letter-spacing: .04em;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: .03em;
     }
 
     .link-sub {
-      font-size: 9px;
-      color: var(--t-dim);
-      letter-spacing: .04em;
+      font-size: 10px;
+      color: var(--t-med);
+      letter-spacing: .03em;
     }
 
     /* ── Right Column Stack ─────────────────────────────────────────────────── */
@@ -614,8 +622,8 @@
 <header class="header">
   <div class="header-left">
     <div class="logo-mark">L</div>
-    <span class="logo-text">LABOPS</span>
-    <span class="logo-sub">Control Center</span>
+    <span class="logo-text">LabOps</span>
+    <span class="logo-sub">control_center</span>
   </div>
   <div class="header-right">
     <span class="refresh-label" id="last-refresh">Updated just now</span>
