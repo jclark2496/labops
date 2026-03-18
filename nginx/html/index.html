@@ -6,7 +6,7 @@
   <title>LabOps — Control Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* ── Design Tokens ─────────────────────────────────────────────────────── */
     :root {
@@ -37,6 +37,7 @@
 
       --font-mono: 'JetBrains Mono', 'Courier New', monospace;
       --font-head: 'Syne', sans-serif;
+      --font-body: 'Syne', sans-serif;
 
       --radius:    6px;
       --hdr-h:     56px;
@@ -48,10 +49,12 @@
       height: 100%;
       background: var(--bg-deep);
       color: var(--t-bright);
-      font-family: var(--font-mono);
-      font-size: 13px;
+      font-family: var(--font-body);
+      font-size: 14px;
       line-height: 1.5;
     }
+    button { cursor: pointer; font-family: inherit; border: none; }
+    input, select { font-family: inherit; }
 
     body {
       display: flex;
@@ -139,10 +142,10 @@
       padding: 5px 14px;
       border: 1px solid var(--b-dim);
       border-radius: var(--radius);
-      font-family: var(--font-mono);
+      font-family: var(--font-head);
       font-size: 11px;
       font-weight: 600;
-      letter-spacing: .06em;
+      letter-spacing: .1em;
       text-transform: uppercase;
     }
 
@@ -205,10 +208,10 @@
     }
 
     .panel-title {
-      font-family: var(--font-mono);
+      font-family: var(--font-head);
       font-size: 13px;
       font-weight: 700;
-      letter-spacing: .14em;
+      letter-spacing: .22em;
       text-transform: uppercase;
       color: var(--t-bright);
     }
@@ -258,9 +261,8 @@
     }
 
     .vm-name {
-      font-family: var(--font-mono);
       font-weight: 600;
-      font-size: 13.5px;
+      font-size: 14px;
       color: var(--t-bright);
       display: flex;
       align-items: center;
@@ -271,10 +273,10 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      font-family: var(--font-mono);
+      font-family: var(--font-head);
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: .06em;
+      letter-spacing: .08em;
       text-transform: uppercase;
       padding: 3px 9px;
       border-radius: 4px;
@@ -291,8 +293,7 @@
     }
 
     .vm-meta {
-      font-family: var(--font-mono);
-      font-size: 11.5px;
+      font-size: 12px;
       color: var(--t-med);
       display: flex;
       gap: 12px;
@@ -309,10 +310,10 @@
 
     /* ── Buttons ─────────────────────────────────────────────────────────────── */
     .btn {
-      font-family: var(--font-mono);
+      font-family: var(--font-head);
       font-size: 11px;
       font-weight: 600;
-      letter-spacing: .06em;
+      letter-spacing: .1em;
       padding: 6px 14px;
       border-radius: 5px;
       border: 1px solid var(--b-med);
@@ -415,8 +416,7 @@
     }
 
     .svc-name {
-      font-family: var(--font-mono);
-      font-size: 12.5px;
+      font-size: 13px;
       font-weight: 500;
       color: var(--t-bright);
       display: flex;
@@ -434,10 +434,10 @@
     .svc-dot.unhealthy { background: var(--c-fail); box-shadow: 0 0 6px rgba(255,68,68,.4); }
 
     .svc-status {
-      font-family: var(--font-mono);
+      font-family: var(--font-head);
       font-size: 11px;
       font-weight: 600;
-      letter-spacing: .06em;
+      letter-spacing: .1em;
       text-transform: uppercase;
     }
 
@@ -491,16 +491,15 @@
     }
 
     .link-title {
-      font-family: var(--font-mono);
       font-weight: 600;
-      font-size: 12px;
-      letter-spacing: .03em;
+      font-size: 13px;
+      letter-spacing: .02em;
     }
 
     .link-sub {
-      font-size: 10px;
+      font-size: 11px;
       color: var(--t-med);
-      letter-spacing: .03em;
+      letter-spacing: .02em;
     }
 
     /* ── Right Column Stack ─────────────────────────────────────────────────── */
