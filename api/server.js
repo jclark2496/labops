@@ -207,6 +207,39 @@ const server = http.createServer(async (req, res) => {
       result = await handleVMAction(vmid, 'destroy');
     } else if (req.method === 'POST' && url === '/vms/provision') {
       result = handleProvision();
+    } else if (req.method === 'GET' && url === '/update-check') {
+      try {
+        const out = execSync('/data/repo/scripts/update.sh check', {
+          cwd: '/data/repo',
+          env: { ...process.env, HOME: '/root', PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' },
+          timeout: 60000
+        }).toString().trim();
+        result = JSON.parse(out);
+      } catch(e) {
+        result = { error: e.message, status: 'error' };
+      }
+    } else if (req.method === 'POST' && url === '/update-apply') {
+      try {
+        const out = execSync('/data/repo/scripts/update.sh apply', {
+          cwd: '/data/repo',
+          env: { ...process.env, HOME: '/root', PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' },
+          timeout: 120000
+        }).toString().trim();
+        result = JSON.parse(out);
+      } catch(e) {
+        result = { error: e.message, status: 'error' };
+      }
+    } else if (req.method === 'POST' && url === '/update-rollback') {
+      try {
+        const out = execSync('/data/repo/scripts/update.sh rollback', {
+          cwd: '/data/repo',
+          env: { ...process.env, HOME: '/root', PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' },
+          timeout: 60000
+        }).toString().trim();
+        result = JSON.parse(out);
+      } catch(e) {
+        result = { error: e.message, status: 'error' };
+      }
     } else {
       res.writeHead(404);
       return res.end(JSON.stringify({ error: 'Not found' }));

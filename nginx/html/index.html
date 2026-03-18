@@ -412,6 +412,8 @@
     .grid > :nth-child(1) .panel { animation-delay: .05s; }
     .right-col > :nth-child(1) { animation-delay: .1s; }
     .right-col > :nth-child(2) { animation-delay: .15s; }
+
+    /* Nav menu styles now in shared.css */
   </style>
 </head>
 <body>
@@ -427,6 +429,15 @@
     <div class="health-badge healthy" id="health-badge">
       <span class="health-dot"></span>
       <span id="health-text">ALL SYSTEMS OK</span>
+    </div>
+    <div class="nav-wrap" id="nav-wrap">
+      <button class="nav-btn" id="nav-btn" onclick="navToggle()">&#x2630; Menu</button>
+      <div class="nav-dd" id="nav-dd">
+        <button class="nav-it" onclick="navToggle();window.open('http://' + location.hostname + ':8080','_blank')">SE Console</button>
+        <button class="nav-it" onclick="navToggle();window.open('http://' + location.hostname + ':8080/admin.html','_blank')">Scenario Studio</button>
+        <button class="nav-it" onclick="navToggle();window.open('http://' + location.hostname + ':8080/architecture.html','_blank')">Architecture</button>
+        <button class="nav-it" onclick="navToggle();window.open('https://central.sophos.com','_blank')">Sophos Central</button>
+      </div>
     </div>
   </div>
 </header>
@@ -530,6 +541,13 @@
 </div>
 
 <script>
+// ── Nav Menu ──────────────────────────────────────────────────────────────────
+function navToggle() { document.getElementById('nav-dd').classList.toggle('open'); }
+document.addEventListener('click', function(e) {
+  var w = document.getElementById('nav-wrap');
+  if (w && !w.contains(e.target)) document.getElementById('nav-dd').classList.remove('open');
+});
+
 // ── Configuration ─────────────────────────────────────────────────────────────
 // These are loaded from the /api/config endpoint or fall back to defaults.
 // Guac credentials come from .env via n8n → injected into /api/config response.
