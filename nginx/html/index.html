@@ -10,12 +10,12 @@
   <style>
     /* ── Design Tokens ─────────────────────────────────────────────────────── */
     :root {
-      --bg-deep:       #0a0f1e;
-      --bg-surface:    #0d1225;
-      --bg-card:       #111827;
-      --bg-hdr:        #001A47;
-      --bg-elevated:   #131e30;
-      --bg-input:      #0b1528;
+      --bg-deep:       #03071e;
+      --bg-surface:    #080f2e;
+      --bg-card:       #0a1540;
+      --bg-hdr:        #080f2e;
+      --bg-elevated:   #0a1540;
+      --bg-input:      #060c24;
 
       --c-cyan:    #00EDFF;
       --c-green:   #00FF41;
@@ -214,13 +214,15 @@
     }
 
     .panel-badge {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: .06em;
-      padding: 3px 8px;
-      border-radius: 3px;
-      background: var(--b-dim);
-      color: var(--t-dim);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .04em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(0,237,255,.06);
+      border: 1px solid rgba(0,237,255,.15);
+      color: var(--t-med);
     }
 
     .panel-body {
@@ -269,12 +271,13 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      font-size: 9px;
+      font-family: var(--font-mono);
+      font-size: 10px;
       font-weight: 600;
-      letter-spacing: .08em;
+      letter-spacing: .06em;
       text-transform: uppercase;
-      padding: 2px 7px;
-      border-radius: 3px;
+      padding: 3px 9px;
+      border-radius: 4px;
     }
 
     .vm-status.running { background: rgba(0,255,65,.1); color: var(--c-green); }
@@ -307,14 +310,14 @@
     /* ── Buttons ─────────────────────────────────────────────────────────────── */
     .btn {
       font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 700;
+      font-size: 11px;
+      font-weight: 600;
       letter-spacing: .06em;
-      padding: 6px 12px;
-      border-radius: 3px;
+      padding: 6px 14px;
+      border-radius: 5px;
       border: 1px solid var(--b-med);
       background: transparent;
-      color: var(--t-med);
+      color: var(--t-bright);
       cursor: pointer;
       transition: all .15s;
       text-transform: uppercase;
