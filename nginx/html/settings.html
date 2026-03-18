@@ -65,7 +65,7 @@
     /* ── Settings form — copied & adapted from index.html ────── */
     .stg-lbl {
       font-size: 10px;
-      color: rgba(235,246,255,.40);
+      color: rgba(235,246,255,.72);
       letter-spacing: .1em;
       text-transform: uppercase;
       margin-bottom: 8px;
@@ -104,7 +104,7 @@
     .stg-card.active .stg-cname { color: var(--accent-cyan); }
     .stg-csub {
       font-size: 10px;
-      color: rgba(235,246,255,.32);
+      color: rgba(235,246,255,.65);
       margin-top: 3px;
       font-family: var(--fm);
     }
@@ -132,7 +132,7 @@
       border-color: var(--accent-cyan);
       box-shadow: 0 0 0 3px rgba(var(--accent-cyan-rgb),.07);
     }
-    .stg-input::placeholder { color: rgba(235,246,255,.35); }
+    .stg-input::placeholder { color: rgba(235,246,255,.60); }
 
     .stg-test {
       font-family: var(--fm);
@@ -341,7 +341,7 @@
     .upd-confirm-btn.no {
       background: transparent;
       border: 1px solid rgba(235,246,255,.15);
-      color: rgba(235,246,255,.45);
+      color: rgba(235,246,255,.70);
     }
     .upd-confirm-btn.no:hover { border-color: rgba(235,246,255,.3); color: var(--text-sec); }
 
@@ -473,7 +473,7 @@
       </div>
       <div class="stg-labops-status" id="stg-labops-status">
         <span class="dot dim"></span>
-        <span style="color:rgba(235,246,255,.32)">Not configured</span>
+        <span style="color:rgba(235,246,255,.65)">Not configured</span>
       </div>
     </div>
 
@@ -654,7 +654,7 @@
     var statusEl = document.getElementById('stg-labops-status');
     var url = document.getElementById('stg-labops-url').value.trim().replace(/\/+$/, '');
     if (!url) {
-      statusEl.innerHTML = '<span class="dot dim"></span><span style="color:rgba(235,246,255,.32)">Not configured</span>';
+      statusEl.innerHTML = '<span class="dot dim"></span><span style="color:rgba(235,246,255,.65)">Not configured</span>';
       return;
     }
     btn.textContent = 'TESTING...'; btn.disabled = true;
@@ -674,10 +674,10 @@
   function stgLabopsUpdateIndicator(url) {
     var statusEl = document.getElementById('stg-labops-status');
     if (!url) {
-      statusEl.innerHTML = '<span class="dot dim"></span><span style="color:rgba(235,246,255,.32)">Not configured</span>';
+      statusEl.innerHTML = '<span class="dot dim"></span><span style="color:rgba(235,246,255,.65)">Not configured</span>';
       return;
     }
-    statusEl.innerHTML = '<span class="dot dim"></span><span style="color:rgba(235,246,255,.32)">URL set &mdash; click Test to verify</span>';
+    statusEl.innerHTML = '<span class="dot dim"></span><span style="color:rgba(235,246,255,.65)">URL set &mdash; click Test to verify</span>';
   }
 
   /* ── Update section ───────────────────────────────────────── */
