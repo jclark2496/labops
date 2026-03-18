@@ -374,6 +374,7 @@ select.ctrl {
   background-position: right 10px center;
   padding-right: 28px;
   cursor: pointer;
+  color-scheme: dark;
 }
 
 select.ctrl option {
