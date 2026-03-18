@@ -35,9 +35,9 @@
       --b-accent:  rgba(0,237,255,.38);
       --b-fail:    rgba(255,68,68,.28);
 
-      --font-mono: 'JetBrains Mono', 'Courier New', monospace;
-      --font-head: 'Syne', sans-serif;
-      --font-body: 'Syne', sans-serif;
+      --ft: 'Syne', sans-serif;
+      --fb: 'Syne', sans-serif;
+      --fm: 'JetBrains Mono', monospace;
 
       --radius:    6px;
       --hdr-h:     56px;
@@ -49,7 +49,7 @@
       height: 100%;
       background: var(--bg-deep);
       color: var(--t-bright);
-      font-family: var(--font-body);
+      font-family: var(--fb);
       font-size: 14px;
       line-height: 1.5;
     }
@@ -85,7 +85,7 @@
     .logo-mark { display: none; }
 
     .logo-text {
-      font-family: 'JetBrains Mono', 'SF Mono', 'Courier New', monospace;
+      font-family: var(--fm);
       font-weight: 700;
       font-size: 15px;
       letter-spacing: .02em;
@@ -94,7 +94,7 @@
     }
 
     .logo-sub {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--fm);
       font-size: 11px;
       font-weight: 400;
       letter-spacing: .03em;
@@ -137,7 +137,7 @@
       padding: 5px 14px;
       border: 1px solid var(--b-dim);
       border-radius: var(--radius);
-      font-family: var(--font-head);
+      font-family: var(--ft);
       font-size: 10px;
       font-weight: 600;
       letter-spacing: .14em;
@@ -161,7 +161,7 @@
     }
 
     .refresh-label {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--fm);
       font-size: 11px;
       color: var(--t-med);
       letter-spacing: .04em;
@@ -204,7 +204,7 @@
     }
 
     .panel-title {
-      font-family: var(--font-head);
+      font-family: var(--ft);
       font-size: 11px;
       font-weight: 600;
       letter-spacing: .26em;
@@ -213,7 +213,7 @@
     }
 
     .panel-badge {
-      font-family: var(--font-mono);
+      font-family: var(--fm);
       font-size: 11px;
       font-weight: 500;
       letter-spacing: .04em;
@@ -269,7 +269,7 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      font-family: var(--font-head);
+      font-family: var(--ft);
       font-size: 9px;
       font-weight: 600;
       letter-spacing: .1em;
@@ -306,7 +306,7 @@
 
     /* ── Buttons ─────────────────────────────────────────────────────────────── */
     .btn {
-      font-family: var(--font-body);
+      font-family: var(--fb);
       font-size: 11px;
       font-weight: 600;
       letter-spacing: .08em;
@@ -376,7 +376,7 @@
     }
 
     .provision-form select {
-      font-family: var(--font-mono);
+      font-family: var(--fm);
       font-size: 11px;
       background: var(--bg-input);
       border: 1px solid var(--b-med);
@@ -430,7 +430,7 @@
     .svc-dot.unhealthy { background: var(--c-fail); box-shadow: 0 0 6px rgba(255,68,68,.4); }
 
     .svc-status {
-      font-family: var(--font-head);
+      font-family: var(--ft);
       font-size: 10px;
       font-weight: 600;
       letter-spacing: .14em;
@@ -582,7 +582,7 @@
     }
 
     .modal-title {
-      font-family: var(--font-head);
+      font-family: var(--ft);
       font-size: 14px;
       font-weight: 700;
       letter-spacing: .08em;
