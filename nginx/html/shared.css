@@ -31,8 +31,8 @@
 
   /* Text */
   --text-primary:  #e8f0ff;
-  --text-sec:      rgba(232,240,255,0.75);
-  --text-dim:      rgba(232,240,255,0.45);
+  --text-sec:      rgba(232,240,255,0.82);
+  --text-dim:      rgba(232,240,255,0.62);
   --text-label:    #c4d8ec;
 
   /* Borders */
