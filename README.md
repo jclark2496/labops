@@ -279,7 +279,9 @@ labops/
 ├── nginx/
 │   ├── conf/default.conf        # Reverse proxy: /, /guacamole/, /api/
 │   └── html/
-│       └── index.html           # Lab Manager Dashboard (SPA)
+│       ├── index.html           # Lab Manager Dashboard (SPA)
+│       ├── settings.html        # Platform settings — update check, adversary-sim detection/redirect
+│       └── shared.css           # Shared design system — Orbitron wordmark, colors, components
 ├── guacamole/
 │   └── init/
 │       └── 01-initdb.sql        # Guacamole PostgreSQL schema

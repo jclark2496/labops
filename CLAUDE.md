@@ -51,8 +51,9 @@ Proxmox Server (user-configured IP)
 | `docker-compose.yml` | All 6 service definitions, networks, volumes |
 | `Makefile` | Operational interface: install, up, down, provision, health |
 | `.env.example` | Environment template — all variables documented |
-| `nginx/html/index.html` | Dashboard SPA (imports shared.css for unified design system) |
-| `nginx/html/shared.css` | Shared design system (fonts, colors, components) imported by the dashboard |
+| `nginx/html/index.html` | Dashboard SPA — VM status, provisioning, container health. Wordmark: SOPHOS LAB_OPS // dashboard |
+| `nginx/html/shared.css` | Shared design system (fonts, colors, components). Includes Orbitron font + .wm-* wordmark classes (brand unification 2026-03-18) |
+| `nginx/html/settings.html` | Platform settings — three-scenario detection logic: standalone (minimal, no AI section), adversary-sim detected (cyan banner + redirect link to port 8080 settings), adversary-sim absent (info banner). Wordmark: SOPHOS LAB_OPS // settings |
 | `nginx/conf/default.conf` | Nginx proxy routes (Guacamole WebSocket, API) |
 | `api/server.js` | LabOps API server — VM CRUD, container health, config |
 | `api/Dockerfile` | Dockerfile for the labops-api container |
@@ -180,4 +181,4 @@ Terraform state is stored locally in `proxmox/terraform/` (gitignored).
 
 ---
 
-*Last updated: 2026-03-18 — Added shared.css design system reference*
+*Last updated: 2026-03-18 — Brand unification: Orbitron wordmark (SOPHOS LAB_OPS // page_name, green accent) applied to dashboard and settings pages; shared.css .wm-* classes added, legacy .shared-brand/.shared-tag removed; settings.html rebuilt with three-scenario detection logic (standalone / adversary-detected / redirect); nav item renamed Settings → Platform Settings*
