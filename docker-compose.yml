@@ -130,9 +130,9 @@ services:
       guacd:
         condition: service_started
     environment:
-      - GUACD_HOSTNAME=172.20.0.80
+      - GUACD_HOSTNAME=labops-guacd
       - GUACD_PORT=4822
-      - POSTGRESQL_HOSTNAME=172.20.0.82
+      - POSTGRESQL_HOSTNAME=labops-guac-postgres
       - POSTGRESQL_PORT=5432
       - POSTGRESQL_DATABASE=guacamole_db
       - POSTGRESQL_USERNAME=${GUAC_DB_USER:-guacamole}
