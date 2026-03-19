@@ -20,17 +20,20 @@ case "$CMD" in
     # Check if rollback is available
     ROLLBACK="false"
     if [ -f "$REPO_DIR/.update-rollback-hash" ]; then ROLLBACK="true"; fi
-    python3 -c "
-import json
+    LOCAL_VER="$LOCAL_VER" REMOTE_VER="$REMOTE_VER" REMOTE_DATE="$REMOTE_DATE" \
+    UPDATE_AVAILABLE="$UPDATE_AVAILABLE" LOCAL_HASH="${LOCAL_HASH:0:8}" \
+    REMOTE_HASH="${REMOTE_HASH:0:8}" REMOTE_CHANGELOG="$REMOTE_CHANGELOG" \
+    ROLLBACK="$ROLLBACK" python3 -c "
+import json, os
 print(json.dumps({
-    'localVersion': '$LOCAL_VER',
-    'remoteVersion': '$REMOTE_VER',
-    'remoteDate': '$REMOTE_DATE',
-    'updateAvailable': $UPDATE_AVAILABLE,
-    'localHash': '${LOCAL_HASH:0:8}',
-    'remoteHash': '${REMOTE_HASH:0:8}',
-    'changelog': json.loads('$REMOTE_CHANGELOG'),
-    'rollbackAvailable': $ROLLBACK
+    'localVersion': os.environ['LOCAL_VER'],
+    'remoteVersion': os.environ['REMOTE_VER'],
+    'remoteDate': os.environ['REMOTE_DATE'],
+    'updateAvailable': os.environ['UPDATE_AVAILABLE'] == 'true',
+    'localHash': os.environ['LOCAL_HASH'],
+    'remoteHash': os.environ['REMOTE_HASH'],
+    'changelog': json.loads(os.environ['REMOTE_CHANGELOG']),
+    'rollbackAvailable': os.environ['ROLLBACK'] == 'true'
 }, indent=None))
 " 2>/dev/null || echo '{"error":"check failed"}'
     ;;
