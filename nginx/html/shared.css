@@ -96,38 +96,6 @@ input, select, textarea { font-family: inherit; }
   z-index: 100;
 }
 
-.shared-brand {
-  font-family: var(--fm);
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  text-decoration: none;
-}
-
-.shared-tag {
-  font-family: var(--fm);
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--accent-cyan);
-  background: rgba(var(--accent-cyan-rgb),0.08);
-  border: 1px solid rgba(var(--accent-cyan-rgb),0.22);
-  border-radius: 5px;
-  padding: 3px 10px 3px 22px;
-  position: relative;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-}
-
-.shared-tag::before {
-  content: '>';
-  position: absolute;
-  left: 8px;
-  color: rgba(var(--accent-cyan-rgb),0.45);
-  font-size: 10px;
-}
-
 /* ── Wordmark (brand unification 2026-03-18) ────────────────── */
 .shared-wordmark { display: flex; align-items: center; flex-shrink: 0; }
 .wm-primary      { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 15px; letter-spacing: .05em; color: #e8f0ff; }
