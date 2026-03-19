@@ -247,10 +247,10 @@
     <div class="nav-wrap" id="nav-wrap">
       <button class="nav-btn" id="nav-btn" onclick="navToggle()">&#x2630; Menu</button>
       <div class="nav-dd" id="nav-dd">
-        <button class="nav-it" onclick="navToggle();window.open('http://' + location.hostname + ':8080','_blank')">SE Console</button>
+        <button class="nav-it" onclick="navToggle();window.open('http://' + location.hostname + ':8081','_blank')">SE Console</button>
         <button class="nav-it" onclick="navToggle();window.location.href='index.html'">Lab Manager</button>
-        <button class="nav-it" onclick="navToggle();window.open('http://' + location.hostname + ':8080/admin.html','_blank')">Scenario Studio</button>
-        <button class="nav-it" onclick="navToggle();window.open('http://' + location.hostname + ':8080/architecture.html','_blank')">Architecture</button>
+        <button class="nav-it" onclick="navToggle();window.open('http://' + location.hostname + ':8081/admin.html','_blank')">Scenario Studio</button>
+        <button class="nav-it" onclick="navToggle();window.open('http://' + location.hostname + ':8081/architecture.html','_blank')">Architecture</button>
         <button class="nav-it" onclick="navToggle();window.open('https://central.sophos.com','_blank')">Sophos Central</button>
         <button class="nav-it" onclick="navToggle()">Platform Settings</button>
       </div>
@@ -509,12 +509,12 @@
 </script>
 <script>
 (function detectAdversarySim() {
-  var url = 'http://' + location.hostname + ':8080/ai-config.json';
+  var url = 'http://' + location.hostname + ':8081/ai-config.json';
   fetch(url, { mode: 'no-cors' })
     .then(function() {
       // Request succeeded or got opaque response — adversary-sim port is up
       var link = document.getElementById('adv-settings-link');
-      if (link) link.href = 'http://' + location.hostname + ':8080/settings.html';
+      if (link) link.href = 'http://' + location.hostname + ':8081/settings.html';
       var banner = document.getElementById('adv-redirect-banner');
       if (banner) banner.style.display = '';
     })
