@@ -17,6 +17,7 @@
 
 networks:
   labops-net:
+    name: labops-net
     driver: bridge
     ipam:
       config:
