@@ -148,7 +148,7 @@ ${VM_IP}
 
 [template:vars]
 ansible_user=${LAB_VM_USER:-Administrator}
-ansible_password=${LAB_VM_PASSWORD:-SEdemo2026}
+ansible_password=${LAB_VM_PASSWORD:-Demo1234!}
 ansible_connection=winrm
 ansible_port=5985
 ansible_winrm_transport=ntlm

@@ -273,7 +273,7 @@ _generate-config:
 		"$${GUAC_ADMIN_USER:-guacadmin}" \
 		"$${GUAC_ADMIN_PASSWORD:-guacadmin}" \
 		"$${LAB_VM_USER:-demo}" \
-		"$${LAB_VM_PASSWORD:-SEdemo2026}" \
+		"$${LAB_VM_PASSWORD:-Demo1234!}" \
 		"$${PROXMOX_URL:-}" \
 		"$${NGINX_PORT:-8080}" \
 		"$${GUAC_PORT:-8085}" \

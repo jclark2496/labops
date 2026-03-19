@@ -10,7 +10,7 @@
 #
 # Variables (from .env or extra-vars):
 #   lab_vm_user     - demo user account name (default: demo)
-#   lab_vm_password - demo user password (default: SEdemo2026)
+#   lab_vm_password - demo user password (default: Demo1234!)
 
 - name: Finalize Windows 11 Template
   hosts: template
@@ -22,7 +22,7 @@
     ansible_winrm_transport: ntlm
     ansible_winrm_server_cert_validation: ignore
     lab_vm_user: "{{ lookup('env', 'LAB_VM_USER') | default('demo', true) }}"
-    lab_vm_password: "{{ lookup('env', 'LAB_VM_PASSWORD') | default('SEdemo2026', true) }}"
+    lab_vm_password: "{{ lookup('env', 'LAB_VM_PASSWORD') | default('Demo1234!', true) }}"
 
   tasks:
     # ── 1. Ensure WinRM service is running ─────────────────────────────────
