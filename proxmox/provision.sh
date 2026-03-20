@@ -107,8 +107,29 @@ cmd_windows_client() {
     ok "  IP:       $vm_ip"
     ok "  RDP:      Connect via LabOps dashboard or: mstsc /v:$vm_ip"
     echo ""
-    log "To configure the VM with Ansible, update inventory.ini and run:"
-    echo "  cd $ANSIBLE_DIR && ansible-playbook -i inventory.ini setup-vm.yml --limit win11_vms"
+
+    # Build a temporary inventory so SEs never have to edit inventory.ini manually
+    TEMP_INVENTORY=$(mktemp)
+    cat > "$TEMP_INVENTORY" <<INVENTORY
+[win11_vms]
+lab-win11-1 ansible_host=${vm_ip} ansible_user=${LAB_VM_USER:-demo} ansible_password=${LAB_VM_PASSWORD} ansible_connection=winrm ansible_winrm_transport=ntlm ansible_port=5985
+
+[all_vms:children]
+win11_vms
+
+[all_vms:vars]
+ansible_winrm_server_cert_validation=ignore
+INVENTORY
+
+    log "Running Ansible to configure VM (RDP, demo user, sandcat agent)..."
+    cd "$ANSIBLE_DIR"
+    if ansible-playbook -i "$TEMP_INVENTORY" setup-vm.yml 2>&1; then
+      ok "VM fully configured — sandcat agent deployed and scheduled on boot"
+    else
+      warn "Ansible completed with warnings. RDP and user setup may still have worked."
+      warn "Sandcat: verify by checking CALDERA Agents tab after VM reboots."
+    fi
+    rm -f "$TEMP_INVENTORY"
   else
     warn "VM started but IP unknown. Manual steps:"
     warn "  1. Check your router DHCP table for a new Windows device"

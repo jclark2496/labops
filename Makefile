@@ -256,6 +256,26 @@ _env:
 	else \
 		echo "✅ N8N_PASSWORD is set"; \
 	fi
+	@LAB_IP=$$(grep '^LAB_HOST_IP=' .env 2>/dev/null | cut -d'=' -f2-); \
+	if [ -z "$$LAB_IP" ]; then \
+		DETECTED_IP=$$(ipconfig getifaddr en0 2>/dev/null || hostname -I 2>/dev/null | awk '{print $$1}'); \
+		if [ -n "$$DETECTED_IP" ]; then \
+			echo ""; \
+			printf "▶ Docker host IP detected as $$DETECTED_IP. Press Enter to accept, or type a different IP: "; \
+			read CONFIRMED_IP; \
+			LAB_IP=$${CONFIRMED_IP:-$$DETECTED_IP}; \
+			if [ "$$(uname)" = "Darwin" ]; then \
+				sed -i '' "s/^LAB_HOST_IP=.*/LAB_HOST_IP=$$LAB_IP/" .env; \
+			else \
+				sed -i "s/^LAB_HOST_IP=.*/LAB_HOST_IP=$$LAB_IP/" .env; \
+			fi; \
+			echo "✅ LAB_HOST_IP set to $$LAB_IP"; \
+		else \
+			echo "⚠️  Could not auto-detect host IP. Set LAB_HOST_IP in .env manually."; \
+		fi; \
+	else \
+		echo "✅ LAB_HOST_IP is set ($$LAB_IP)"; \
+	fi
 	@if [ ! -f proxmox/terraform/terraform.tfvars ] && [ -f .env ]; then \
 		echo "▶ Generating terraform.tfvars from .env..."; \
 		. ./.env; \

@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LabOps — Control Center</title>
   <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="/driver.css">
+  <script src="/driver.iife.js"></script>
   <style>
     body {
       display: flex;
@@ -435,6 +437,7 @@
       <span class="health-dot"></span>
       <span id="health-text">ALL SYSTEMS OK</span>
     </div>
+    <button class="tour-help-btn" id="tour-help-btn" title="Page tour">?</button>
     <div class="nav-wrap" id="nav-wrap">
       <button class="nav-btn" id="nav-btn" onclick="navToggle()">&#x2630; Menu</button>
       <div class="nav-dd" id="nav-dd">
@@ -932,5 +935,7 @@ function toast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
 }
 </script>
+<script src="/tour.js"></script>
+<script>initTour();</script>
 </body>
 </html>

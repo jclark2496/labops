@@ -449,3 +449,72 @@ select.ctrl option {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
+
+/* ── Guided Tour ─────────────────────────────────────────── */
+.tour-help-btn {
+  background: transparent;
+  border: 1px solid rgba(0, 242, 179, 0.4);
+  color: var(--accent-green);
+  font-family: var(--fm);
+  font-size: 13px;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.tour-help-btn:hover {
+  border-color: var(--accent-green);
+  box-shadow: 0 0 8px rgba(0, 242, 179, 0.2);
+}
+
+/* Driver.js theme overrides — green accent for LabOps */
+.driver-popover {
+  background: #111827 !important;
+  border: 1px solid rgba(0, 242, 179, 0.4) !important;
+  box-shadow: 0 0 24px rgba(0, 242, 179, 0.15) !important;
+  border-radius: 10px !important;
+  max-width: 300px !important;
+  font-family: var(--fm) !important;
+}
+.driver-popover-title {
+  color: var(--accent-green) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+.driver-popover-description {
+  color: #cbd5e1 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+.driver-popover-description code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(0,242,179,0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.driver-popover-next-btn {
+  background: var(--accent-green) !important;
+  color: #000 !important;
+  border: none !important;
+  font-family: var(--fm) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+.driver-popover-prev-btn {
+  color: #64748b !important;
+  border-color: rgba(100, 116, 139, 0.3) !important;
+  font-family: var(--fm) !important;
+  font-size: 11px !important;
+}
+.driver-highlighted-element {
+  border-radius: 6px !important;
+}

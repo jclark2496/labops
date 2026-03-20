@@ -224,7 +224,7 @@ LabOps uses a lightweight Node.js API server (`api/server.js`) as its backend. I
 | `/api/health` | Aggregate health check endpoint. |
 | `/api/config` | Dashboard configuration (Guacamole credentials, Proxmox URL, port mappings) from `.env`. |
 
-> **Note:** The LabOps API server replaces n8n for this repo. No workflow imports or activation needed. n8n is still used by the adversary-sim and mdr-demo-lab repos for AI scenario generation.
+> **Note:** LabOps uses a lightweight Node.js API server instead of n8n for VM management — no workflow imports or activation needed. When adversary-sim is deployed alongside LabOps, it brings its own n8n instance (`advsim-n8n`) for AI scenario generation. The two stacks manage their n8n independently.
 
 ## Troubleshooting
 

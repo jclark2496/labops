@@ -1,6 +1,6 @@
 # LabOps -- AI Coding Context
 
-> This file provides context for GitHub Copilot and other AI coding agents.
+> This is a brief AI context primer for GitHub Copilot and other AI coding agents. For the full engineering reference (architecture, all credentials/IDs, critical gotchas, API details), see **[CLAUDE.md](CLAUDE.md)**.
 
 ## Project Purpose
 LabOps is a standalone, product-agnostic automated lab manager for Sales Engineers. It provisions
